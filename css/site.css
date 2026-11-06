@@ -367,3 +367,11 @@ main.aand{max-width:none}
  @page{size:A4 landscape;margin:.6cm}
  .bwijzer{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* diepe tijd */
+.gb.geo{border-left-color:#8d6e63;background:#f7f1ec}
+.tijdbalk{width:100%;max-width:520px;height:auto;display:block;margin:.3rem 0}
+.tijdlijst{list-style:none;padding:0}
+.tijdlijst li{display:grid;grid-template-columns:9rem 1fr 4rem;gap:.5rem;align-items:center;padding:.15rem 0;border-bottom:1px solid #eee}
+.tijdlijst .bar{height:.7rem;background:linear-gradient(90deg,#6fb7c9,#8cc66b 40%,#f2a65e 72%,#f4d35e);border-radius:3px}
+.tijdmoment{border-left:4px solid #8d6e63;padding:.2rem .8rem;margin:.6rem 0}

@@ -9,7 +9,7 @@
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="icon" href="../../icoon-192.png">
 <link rel="apple-touch-icon" href="../../icoon-192.png">
-<link rel="stylesheet" href="../../css/site.css?v=f291d7de">
+<link rel="stylesheet" href="../../css/site.css?v=66365f16">
 
 </head>
 <body data-root="../../" class="">
@@ -28,7 +28,7 @@
 </article>
 <script>fetch('../../data/wandelingen.json').then(function(r){return r.json();}).then(function(W){document.querySelectorAll('.flw li').forEach(function(li){var x=W.filter(function(a){return a.id===li.dataset.w;})[0];if(x)li.querySelector('a').textContent=x.titel+' (± '+(Math.round(x.lengte/100)/10).toString().replace('.',',')+' km)';else li.remove();});});</script>
 </main>
-<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../boek/">het boek</a> · <a href="../../gidsen/">voor gidsen</a> · <a href="../../speurkaart/">speurkaart</a> · <a href="../../quiz/">quiz</a> · <a href="../../aandenken/">aandenken</a> · <a href="../../feedback/">feedback</a> · <a href="../../kaart/?opnemen=1#opnemen">tocht opnemen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../boek/">het boek</a> · <a href="../../tijdlijn/">diepe tijd</a> · <a href="../../gidsen/">voor gidsen</a> · <a href="../../speurkaart/">speurkaart</a> · <a href="../../quiz/">quiz</a> · <a href="../../aandenken/">aandenken</a> · <a href="../../feedback/">feedback</a> · <a href="../../kaart/?opnemen=1#opnemen">tocht opnemen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>
 </html>
