@@ -184,3 +184,5 @@ body.met-terug { padding-bottom: 80px; }
 ol.stops li { scroll-margin-top: 70px; }
 ol.stops li:target { background: #fff4e0; border-radius: 10px; }
 @media (prefers-color-scheme: dark) { ol.stops li:target { background: #3a2c12; } }
+
+.az { margin: 10px 0 4px; }
