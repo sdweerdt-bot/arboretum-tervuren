@@ -31,7 +31,7 @@ self.addEventListener('fetch', function (e) {
   var html = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('.html');
   if (html || url.pathname.endsWith('.json')) {               // eerst netwerk (vers), anders bewaarde kopie
     var key = html ? new Request(url.origin + url.pathname) : req;
-    e.respondWith(fetch(req).then(function (r) { return bewaar(key, r); }).catch(function () {
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then(function (r) { return bewaar(key, r); }).catch(function () {
       return caches.match(key, { ignoreSearch: true }).then(function (m) {
         return m || (html ? caches.match(new URL('offline.html', BASE).href) : Response.error());
       });
