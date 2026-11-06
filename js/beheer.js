@@ -127,7 +127,7 @@
     x.titel = $('f-titel').value.trim() || 'Nieuwe wandeling'; x.kleur = $('f-kleur').value; x.seizoen = $('f-seizoen').value.trim();
     x.intro = $('f-intro').value.trim(); x.soort = $('f-soort').value; x.folder = $('f-folder').value.trim(); x.verborgen = $('f-verborgen').checked;
     if (!x.verborgen) delete x.verborgen;
-    ['rodedraad', 'praktisch', 'afsluiter'].forEach(function (k) { var v = $('f-' + k).value.trim(); if (v) x[k] = v; else delete x[k]; });
+    ['rodedraad', 'praktisch', 'afsluiter'].forEach(function (k) { var v = $('f-' + k).value.trim(); if (v !== (x[k] || '')) delete x.gidsauto; if (v) x[k] = v; else delete x[k]; });
     var tz = x.teaser || {}; ['kop','tekst','datum','uur','prijs','duur','inschrijven','meebrengen'].forEach(function (k) { tz[k] = $('t-' + k).value.trim(); });
     x.teaser = tz;
   }
@@ -136,7 +136,7 @@
     var x = w(), i = +li.dataset.i, s = x.stops[i];
     if (e.target.classList.contains('b-titel')) s.titel = e.target.value;
     if (e.target.classList.contains('b-tekst')) s.tekst = e.target.value;
-    if (e.target.classList.contains('b-gv')) { var gk = e.target.dataset.k, gv = e.target.value; if (gv.trim()) s[gk] = gv; else delete s[gk]; }
+    if (e.target.classList.contains('b-gv')) { var gk = e.target.dataset.k, gv = e.target.value; if (gv.trim()) s[gk] = gv; else delete s[gk]; delete s.gidsauto; }
     if (e.target.classList.contains('b-fbij')) s.fotos[+e.target.dataset.f].bijschrift = e.target.value;
     if (e.target.classList.contains('b-foto') && e.type === 'change') { voegFotosToe(x, s, e.target.files); e.target.value = ''; return; }
     if (e.target.classList.contains('b-soort') && e.type === 'change') {
