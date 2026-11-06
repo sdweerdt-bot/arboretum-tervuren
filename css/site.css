@@ -281,3 +281,29 @@ details.gids > summary { cursor: pointer; font-weight: 700; color: var(--kl, #13
 .uitboek .fotorij { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
 .uitboek figure { margin: 0; } .uitboek figure img { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; }
 .uitboek figcaption { font-size: 12px; color: #555; }
+
+/* zakgids (afdrukbaar, zelf op pad) */
+.zakgids { --kl: #2e7d32; }
+.zakgids h1 { color: var(--kl); margin: 4px 0; }
+.zakgids .zfeit { font-size: 14px; }
+.zakgids .zrood, .zakgids .zstart { border-left: 4px solid var(--kl); padding: 4px 10px; background: #f7f7f2; }
+.zakgids ol.zstops { list-style: none; padding: 0; columns: 2 300px; column-gap: 24px; }
+.zakgids ol.zstops li { break-inside: avoid; margin: 0 0 12px; font-size: 14px; }
+.zakgids ol.zstops h3 { margin: 6px 0 2px; font-size: 16px; }
+.zakgids .zsoort { color: #555; font-size: 13px; margin: 0; }
+.zakgids .zdoe { background: #fff3e0; padding: 3px 6px; border-radius: 4px; }
+.zakgids .zvraag { color: #0d47a1; }
+.zakgids .vinkje { font-size: 18px; }
+.zakgids .zantw { font-size: 12px; transform: rotate(180deg); border-top: 1px dashed #999; padding-top: 6px; margin-top: 10px; }
+.zakgids .zantw ol { columns: 2; margin: 4px 0; }
+@media print {
+  .zakgids { font-size: 12px; } .zakgids ol.zstops li { font-size: 12px; }
+  .zakgids .plat { max-height: 330px; object-fit: contain; }
+}
+/* speurkaart en bingo */
+.bingo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
+.bingo div { border: 2px solid #2e7d32; border-radius: 8px; padding: 8px; min-height: 92px; font-size: 14px; display: flex; flex-direction: column; justify-content: space-between; }
+.bingo div b { font-size: 22px; }
+.paspoort { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.paspoort div { border: 2px dashed #ef6c00; border-radius: 50%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; padding: 6px; }
+@media print { .speur { font-size: 13px; } .pagebreak { break-before: page; } }

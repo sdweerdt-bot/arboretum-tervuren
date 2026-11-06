@@ -58,6 +58,8 @@
     if (w.praktisch) h += '<div class="gb prak"><b>Voor de gids</b>' + alineas(w.praktisch) + '</div>';
     h += '<div class="knoppen"><a class="knop hoofd" href="' + ROOT + 'kaart/?w=' + w.id + '">Start de wandeling op de kaart (met GPS)</a>' +
       '<a class="knop" href="' + ROOT + 'teaser/?w=' + w.id + '">Teaser om te verspreiden</a>' +
+      '<a class="knop" href="' + ROOT + 'folder/?w=' + w.id + '">Zakgids om af te drukken</a>' +
+      (/kinderen|families/.test(w.id) ? '<a class="knop" href="' + ROOT + 'speurkaart/">Speurkaart, bingo en paspoort</a>' : '') +
       (w.stops.some(function (x) { return x.verhaal; }) ? '<button type="button" class="knop" id="gidsknop">Gidsteksten dichtklappen</button>' : '') + '</div>';
     h += '<p class="waar"><b>Start en einde:</b> ' + esc(w.start.naam) + ' (boswachterswoningen, ingang Eikestraat). <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + w.start.lat + ',' + w.start.lon + '">Route ernaartoe</a></p>';
     h += kaartje(w);
@@ -107,6 +109,38 @@
     });
     el.innerHTML = h;
   }
+  function kort(t, n) {   // eerste n zinnen
+    var z = String(t || '').replace(/\s+/g, ' ').match(/[^.!?]+[.!?]+["”]?/g) || [String(t || '')];
+    return z.slice(0, n).join(' ').trim();
+  }
+  function folder(w, el) {
+    var url = location.origin + location.pathname.replace(/folder\/.*$/, '') + 'wandeling/?w=' + w.id;
+    var kind = /kinderen|families/.test(w.id);
+    document.title = 'Zakgids: ' + w.titel;
+    var sv = w.startverhaal || {};
+    var h = '<div class="knoppen geenprint"><button type="button" class="knop hoofd" onclick="window.print()">Afdrukken of opslaan als pdf</button><a class="knop" href="' + ROOT + 'wandeling/?w=' + w.id + '">Terug naar de wandeling</a></div>' +
+      '<p class="muted geenprint">Tip: druk recto-verso af op A4. Geef de zakgids mee aan wie zelfstandig wil wandelen, of als aandenken na een gidsbeurt.</p>' +
+      '<article class="zakgids" style="--kl:' + w.kleur + '"><header class="zkop"><p class="tlabel">Geografisch Arboretum Tervuren · zelf op pad</p><h1>' + esc(w.titel) + '</h1>' +
+      '<p>' + esc(w.intro || '') + '</p><p class="zfeit"><b>Start en einde:</b> ' + esc(w.start.naam) + ' (ingang Eikestraat) · <b>Afstand:</b> ± ' + km(w.lengte) + ' km · <b>Stops:</b> ' + w.stops.length +
+      (w.teaser && w.teaser.duur ? ' · <b>Duur:</b> ' + esc(w.teaser.duur) : '') + '</p></header>' + kaartje(w);
+    if (w.rodedraad) h += '<p class="zrood"><b>Waar gaat het over?</b> ' + esc(kort(w.rodedraad, 2)) + '</p>';
+    if (sv.verhaal) h += '<p class="zstart"><b>Even vooraf.</b> ' + esc(kort(sv.verhaal, 3)) + '</p>';
+    var antw = [];
+    h += '<ol class="zstops">' + w.stops.map(function (s, i) {
+      var r = '<li><h3><span class="snr">' + (i + 1) + '</span>' + esc(s.titel || s.nl || s.n) + '</h3>' +
+        (s.n ? '<p class="zsoort">' + naam(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + (s.g ? ' · groep ' + esc(s.g) : '') + '</p>' : (s.plaats ? '<p class="zsoort">' + esc(s.plaats) + '</p>' : ''));
+      r += '<p>' + esc(kort(s.verhaal || s.tekst, kind ? 2 : 3)) + '</p>';
+      if (s.kijk) r += '<p class="zkijk"><b>Kijk:</b> ' + esc(kort(s.kijk, 2)) + '</p>';
+      if (s.doe) r += '<p class="zdoe"><b>Doe:</b> ' + esc(kort(s.doe, 3)) + ' <span class="vinkje">☐</span></p>';
+      if (s.vraag) { antw.push((i + 1) + '. ' + (s.antwoord || '')); r += '<p class="zvraag"><b>Vraag ' + (i + 1) + ':</b> ' + esc(s.vraag) + '</p>'; }
+      return r + '</li>';
+    }).join('') + '</ol>';
+    if (w.afsluiter) h += '<p class="zrood"><b>Tot slot.</b> ' + esc(kort(w.afsluiter, 2)) + '</p>';
+    if (antw.length) h += '<div class="zantw"><b>Antwoorden</b><ol>' + antw.map(function (a) { return '<li>' + esc(a.replace(/^\d+\.\s*/, '')) + '</li>'; }).join('') + '</ol></div>';
+    h += '<p class="tlink">Meer verhalen, foto’s en GPS-kaart: ' + esc(url.replace(/^https?:\/\//, '')) + '</p>' +
+      '<p class="muted">Blijf op de paden, pluk niets van de bomen en neem je afval mee. Bronnen: arboretum-tervuren.be en het boek <i>Geografisch Arboretum Tervuren. Een wereldreis rond bomen</i> (2020).</p></article>';
+    el.innerHTML = h;
+  }
   function teaser(w, el) {
     var t = w.teaser || {}, url = location.origin + location.pathname.replace(/teaser\/.*$/, '') + 'wandeling/?w=' + w.id;
     document.title = 'Teaser: ' + w.titel;
@@ -136,6 +170,8 @@
   fetch(ROOT + 'data/wandelingen.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (W) {
     var tp = document.getElementById('teaserpagina');
     if (tp) { var tid = new URLSearchParams(location.search).get('w'), tw = W.filter(function (x) { return x.id === tid; })[0]; if (tw) teaser(tw, tp); else tp.innerHTML = '<p>Wandeling niet gevonden. <a href="' + ROOT + 'wandelingen/">Alle wandelingen</a></p>'; }
+    var fp = document.getElementById('folderpagina');
+    if (fp) { var fid = new URLSearchParams(location.search).get('w'), fw = W.filter(function (x) { return x.id === fid; })[0]; if (fw) folder(fw, fp); else fp.innerHTML = '<p>Wandeling niet gevonden.</p>'; }
     var el = document.getElementById('wandelpagina');
     if (el) {
       var id = new URLSearchParams(location.search).get('w'), w = W.filter(function (x) { return x.id === id; })[0];
