@@ -22,7 +22,7 @@
     if (s.verhaal) h += '<div class="gb vertel"><b>Vertel</b>' + alineas(s.verhaal) + '</div>';
     if (s.kijk) h += '<div class="gb kijk"><b>Kijk en wijs aan</b>' + alineas(s.kijk) + '</div>';
     if (s.weetje) h += '<div class="gb weetje"><b>Weetje</b>' + alineas(s.weetje) + '</div>';
-    if (s.geo) h += '<div class="gb geo"><b>Diepe tijd</b>' + tijdbalk(s.geo.ma) + '<p>' + esc(s.geo.tekst) + '</p><p class="muted"><a href="' + ROOT + 'tijdlijn/">Alle boomgeslachten op de geologische tijdschaal</a></p></div>';
+    if (s.geo) h += '<div class="gb geo"><b>Diepe tijd</b>' + tijdbalk(s.geo.ma) + (s.geo.moment ? '<p class="muted"><span class="nr">' + s.geo.moment + '</span>Moment ' + s.geo.moment + ': ' + esc(s.geo.momenttitel) + '</p>' : '') + '<p>' + esc(s.geo.tekst) + '</p><p class="muted"><a href="' + ROOT + 'tijdlijn/">Alle boomgeslachten op de geologische tijdschaal</a></p></div>';
     if (s.doe) h += '<div class="gb doe"><b>Doe-opdracht</b>' + alineas(s.doe) + '</div>';
     if (s.samen) h += '<div class="gb samen"><b>Samen praten (jong en oud)</b>' + alineas(s.samen) + '</div>';
     if (s.vraag) h += '<div class="gb vraag"><b>Vraag aan de groep</b><p>' + esc(s.vraag) + '</p>' + (s.antwoord ? '<details><summary>Antwoord</summary><p>' + esc(s.antwoord) + '</p></details>' : '') + '</div>';
@@ -37,7 +37,7 @@
   }
   window.ARB_GIDS = gids;
   function tijdbalk(ma) {
-    var P_ = [['Trias', 252, 201, '#b98bb0'], ['Jura', 201, 145, '#6fb7c9'], ['Krijt', 145, 66, '#8cc66b'], ['Paleogeen', 66, 23, '#f2a65e'], ['Neog.', 23, 2.6, '#f4d35e'], ['Kw.', 2.6, 0, '#f6efb0']];
+    var P_ = [['Trias', 251.9, 201.4, '#b98bb0'], ['Jura', 201.4, 143.1, '#6fb7c9'], ['Krijt', 143.1, 66, '#8cc66b'], ['Paleogeen', 66, 23, '#f2a65e'], ['Neog.', 23, 2.6, '#f4d35e'], ['Kw.', 2.6, 0, '#f6efb0']];
     var X = function (m) { return 10 + (230 - m) / 230 * 380; };
     var h = '<svg class="tijdbalk" viewBox="0 0 400 58" role="img" aria-label="Geologische tijdschaal met de oudste fossielen rond ' + ma + ' miljoen jaar">';
     P_.forEach(function (p) { var a = X(Math.min(p[1], 230)), b = X(p[2]); h += '<rect x="' + a.toFixed(1) + '" y="20" width="' + (b - a).toFixed(1) + '" height="16" fill="' + p[3] + '"/>' + (b - a > 30 ? '<text x="' + ((a + b) / 2).toFixed(1) + '" y="31.5" font-size="9" text-anchor="middle" fill="#333">' + p[0] + '</text>' : ''); });

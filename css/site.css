@@ -375,3 +375,6 @@ main.aand{max-width:none}
 .tijdlijst li{display:grid;grid-template-columns:9rem 1fr 4rem;gap:.5rem;align-items:center;padding:.15rem 0;border-bottom:1px solid #eee}
 .tijdlijst .bar{height:.7rem;background:linear-gradient(90deg,#6fb7c9,#8cc66b 40%,#f2a65e 72%,#f4d35e);border-radius:3px}
 .tijdmoment{border-left:4px solid #8d6e63;padding:.2rem .8rem;margin:.6rem 0}
+
+.nr{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#0f7b78;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;vertical-align:middle}
+.tijdmoment h3{margin:.2rem 0}
