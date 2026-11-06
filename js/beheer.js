@@ -32,6 +32,11 @@
     return { eik: t.eik, slug: t.slug, n: t.n, nl: t.nl, titel: (oud && oud.titel) || t.nl || t.n, tekst: (oud && oud.tekst) || '',
       lat: s.lat, lon: s.lon, g: s.g, om: s.om || 0, j: s.j || 0, soort: s.soort, aantal: s.n || 1 };
   }
+  function stopVanMet(ti, s, oud) {   // behoudt gidsteksten, foto's en links
+    var n = stopVan(ti, s, oud);
+    ['hoofdstuk', 'verhaal', 'kijk', 'weetje', 'vraag', 'antwoord', 'brug', 'fotos', 'meer'].forEach(function (k) { if (oud && oud[k]) n[k] = oud[k]; });
+    return n;
+  }
   function dichtsteStand(p, max) {
     var best = null;
     Object.keys(TAX).forEach(function (k) { TAX[k].st.forEach(function (s) { var d = afst(p, [s.lat, s.lon]); if (d <= max && (!best || d < best.d)) best = { d: d, ti: +k, s: s }; }); });
@@ -82,11 +87,15 @@
     $('wkeuze').innerHTML = W.map(function (x, i) { return '<option value="' + i + '">' + esc(x.titel) + (x.verborgen ? ' (verborgen)' : '') + (x.soort === 'officieel' ? ' · lus' : '') + '</option>'; }).join('');
     $('wkeuze').value = cur;
   }
+  var GV = [['hoofdstuk', 'Hoofdstuk (bv. 1823 · Aankomst)', 1], ['verhaal', 'Vertel (lege regel = nieuwe alinea)', 6], ['kijk', 'Kijk en wijs aan', 3], ['weetje', 'Weetje', 2], ['vraag', 'Vraag aan de groep', 1], ['antwoord', 'Antwoord', 1], ['brug', 'Brug naar de volgende stop', 2]];
   function toon() {
     var x = w(); if (!x) return;
     $('f-titel').value = x.titel || ''; $('f-id').textContent = x.id; $('f-kleur').value = x.kleur || '#2E7D32';
     $('f-seizoen').value = x.seizoen || ''; $('f-intro').value = x.intro || ''; $('f-soort').value = x.soort || 'thema';
     $('f-folder').value = x.folder || ''; $('f-verborgen').checked = !!x.verborgen;
+    ['rodedraad', 'praktisch', 'afsluiter'].forEach(function (k) { $('f-' + k).value = x[k] || ''; });
+    var tz = x.teaser || {}; ['kop','tekst','datum','uur','prijs','duur','inschrijven','meebrengen'].forEach(function (k) { $('t-' + k).value = tz[k] || ''; });
+    $('f-teaserlink').href = ROOT + 'teaser/?w=' + x.id;
     $('f-folderrij').hidden = (x.soort !== 'officieel');
     $('f-info').textContent = x.stops.length + ' stops · ' + (x.lengte / 1000).toFixed(1).replace('.', ',') + ' km · route: ' + (x.routeBron === 'opname' ? 'opgenomen GPS-spoor' : 'langs de paden');
     $('f-link').href = ROOT + 'wandeling/?w=' + x.id;
@@ -100,7 +109,9 @@
         '<button type="button" data-a="op" title="omhoog">↑</button><button type="button" data-a="neer" title="omlaag">↓</button><button type="button" data-a="weg" title="verwijderen">✕</button></div>' +
         '<label>Soort<input class="b-soort" list="soortenlijst" value="' + esc(s.n + (s.nl ? ' – ' + s.nl : '')) + '"></label>' +
         '<label>Standplaats<select class="b-stand">' + opts + '</select></label>' +
-        '<label>Uitleg<textarea class="b-tekst" rows="3">' + esc(s.tekst) + '</textarea></label>' +
+        '<label>Korte uitleg<textarea class="b-tekst" rows="3">' + esc(s.tekst) + '</textarea></label>' +
+        '<details class="bgids"' + (s.verhaal ? ' open' : '') + '><summary>Gidstekst (verhaal, kijk, weetje, vraag, brug)</summary>' +
+        GV.map(function (g) { return '<label>' + g[1] + '<textarea class="b-gv" data-k="' + g[0] + '" rows="' + g[2] + '">' + esc(s[g[0]] || '') + '</textarea></label>'; }).join('') + '</details>' +
         '<div class="bfotos">' + (s.fotos || []).map(function (f, k) {
           return '<figure class="bfoto"><img src="' + (f.src.indexOf('data:') === 0 ? f.src : ROOT + f.src) + '" alt="">' + (f.src.indexOf('data:') === 0 ? '<span class="bnieuw">nog niet online</span>' : '') +
             '<input class="b-fbij" data-f="' + k + '" value="' + esc(f.bijschrift || '') + '" placeholder="Bijschrift (optioneel)" aria-label="Bijschrift foto ' + (k + 1) + '">' +
@@ -116,12 +127,16 @@
     x.titel = $('f-titel').value.trim() || 'Nieuwe wandeling'; x.kleur = $('f-kleur').value; x.seizoen = $('f-seizoen').value.trim();
     x.intro = $('f-intro').value.trim(); x.soort = $('f-soort').value; x.folder = $('f-folder').value.trim(); x.verborgen = $('f-verborgen').checked;
     if (!x.verborgen) delete x.verborgen;
+    ['rodedraad', 'praktisch', 'afsluiter'].forEach(function (k) { var v = $('f-' + k).value.trim(); if (v) x[k] = v; else delete x[k]; });
+    var tz = x.teaser || {}; ['kop','tekst','datum','uur','prijs','duur','inschrijven','meebrengen'].forEach(function (k) { tz[k] = $('t-' + k).value.trim(); });
+    x.teaser = tz;
   }
   function wijzigStop(e) {
     var li = e.target.closest('.bstop'); if (!li) return;
     var x = w(), i = +li.dataset.i, s = x.stops[i];
     if (e.target.classList.contains('b-titel')) s.titel = e.target.value;
     if (e.target.classList.contains('b-tekst')) s.tekst = e.target.value;
+    if (e.target.classList.contains('b-gv')) { var gk = e.target.dataset.k, gv = e.target.value; if (gv.trim()) s[gk] = gv; else delete s[gk]; }
     if (e.target.classList.contains('b-fbij')) s.fotos[+e.target.dataset.f].bijschrift = e.target.value;
     if (e.target.classList.contains('b-foto') && e.type === 'change') { voegFotosToe(x, s, e.target.files); e.target.value = ''; return; }
     if (e.target.classList.contains('b-soort') && e.type === 'change') {
@@ -129,11 +144,11 @@
       if (ti === undefined) { melding('Soort "' + esc(e.target.value) + '" niet gevonden in het arboretum.', true); return; }
       var best = TAX[ti].st.slice().sort(function (a, b) { return afst([s.lat, s.lon], [a.lat, a.lon]) - afst([s.lat, s.lon], [b.lat, b.lon]); })[0];
       var titelWasNaam = s.titel === s.nl || s.titel === s.n;
-      x.stops[i] = stopVan(ti, best, { titel: titelWasNaam ? '' : s.titel, tekst: s.tekst }); berekenRoute(); toon();
+      x.stops[i] = stopVanMet(ti, best, Object.assign({}, s, { titel: titelWasNaam ? '' : s.titel })); berekenRoute(); toon();
     }
     if (e.target.classList.contains('b-stand')) {
       var t2 = NAAM2I[s.n.toLowerCase()], st = TAX[t2].st[+e.target.value];
-      x.stops[i] = stopVan(t2, st, s); berekenRoute(); toon();
+      x.stops[i] = stopVanMet(t2, st, s); berekenRoute(); toon();
     }
     bewaarConcept();
   }
@@ -276,7 +291,7 @@
     $('b-online').onclick = function () { localStorage.removeItem('arb-beheer-concept'); location.reload(); };
     lijstWandelingen(); startKaart(); toon();
     $('wkeuze').onchange = function () { leesFormulier(); cur = +this.value; toon(); };
-    ['f-titel', 'f-kleur', 'f-seizoen', 'f-intro', 'f-soort', 'f-folder', 'f-verborgen'].forEach(function (id) { $(id).addEventListener('change', function () { leesFormulier(); lijstWandelingen(); toon(); }); });
+    ['f-titel', 'f-kleur', 'f-seizoen', 'f-intro', 'f-soort', 'f-folder', 'f-verborgen', 'f-rodedraad', 'f-praktisch', 'f-afsluiter', 't-kop', 't-tekst', 't-datum', 't-uur', 't-prijs', 't-duur', 't-inschrijven', 't-meebrengen'].forEach(function (id) { $(id).addEventListener('change', function () { leesFormulier(); lijstWandelingen(); toon(); }); });
     $('stops').addEventListener('input', wijzigStop); $('stops').addEventListener('change', wijzigStop); $('stops').addEventListener('click', stopKnop);
     $('b-nieuw').onclick = function () {
       leesFormulier();
