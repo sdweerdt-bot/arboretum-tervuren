@@ -23,8 +23,7 @@
 <h2>In het arboretum</h2><div class="feiten"><div><b>12</b><span>bomen</span></div><div><b>1</b><span>reeksen</span></div><div><b>4</b><span>losse bomen</span></div><div><b>1912</b><span>oudste aanplant</span></div><div><b>430 cm</b><span>grootste omtrek</span></div></div>
 <p>Staat in <a href="../../groep/37/">groep 37: China, Midden-Chinese provincies</a>.</p>
 <div style="position:relative"><img class="plat" src="../../img/plattegrond.svg" alt="Plattegrond van het arboretum met de standplaatsen"><svg viewBox="0 0 2186 2036" style="position:absolute;inset:0;width:100%;height:100%"><circle cx="1989" cy="591" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1955" cy="589" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1878" cy="580" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1955" cy="584" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1952" cy="589" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/></svg></div>
-<div class="dash"><b>In de chinawandeling</b> (stop 11: Hemelboom)<p class="tekst">In Europa ingevoerd rond 1750. Er werd ooit een zijdevlinder op gekweekt. Hij groeit zeer snel en zaait zich overal uit, waardoor hij in grote delen van Europa als invasieve soort bestreden wordt. Kneus een blad: het ruikt onaangenaam, vandaar ook de bijnaam &quot;stinkboom&quot;. Dit is een van de dikste bomen van het arboretum.</p><a href="../../wandeling/china/">Naar de wandeling</a></div>
-<div class="dash"><b>In de reuzen en oudjes</b> (stop 2: Hemelboom)<p class="tekst">Omtrek 430 cm (diameter ongeveer 137 cm), geplant in 1983. Een afzonderlijk genummerde boom.</p><a href="../../wandeling/reuzen/">Naar de wandeling</a></div>
+<div id="in-wandelingen" data-n="Ailanthus altissima"></div>
 <h2>Standplaatsen</h2><table class="stand"><tr><th>Groep</th><th>Wat</th><th>Plantjaar</th><th>Omtrek</th><th></th></tr>
 <tr><td><a href="../../groep/37/">37A</a> <span class="muted">Provincie Hebei</span></td><td>boom</td><td>1983</td><td>430 cm</td><td><a href="../../kaart/?t=ailanthus-altissima&amp;ll=50.81121,4.52018">kaart</a></td></tr>
 <tr><td><a href="../../groep/37/">37A</a> <span class="muted">Provincie Hebei</span></td><td>reeks van 8</td><td>1983</td><td>94 cm</td><td><a href="../../kaart/?t=ailanthus-altissima&amp;ll=50.81123,4.51966">kaart</a></td></tr>
@@ -38,9 +37,9 @@
 <script>(function(){var p=new URLSearchParams(location.search),w=p.get('w');if(!w)return;var s=+p.get('s')||0,k=p.get('van')==='kaart',R=document.body.dataset.root;
 fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(function(L){var W=L.filter(function(x){return x.id===w;})[0];if(!W)return;
 var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
-el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/'+w+'/#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
+el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/?w='+w+'#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
 (v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
-el.hidden=false;document.body.classList.add('met-terug');});})();</script>
+el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>

@@ -23,6 +23,7 @@
 <h2>In het arboretum</h2><div class="feiten"><div><b>75</b><span>bomen</span></div><div><b>4</b><span>reeksen</span></div><div><b>0</b><span>losse bomen</span></div><div><b>1986</b><span>oudste aanplant</span></div><div><b>38 cm</b><span>grootste omtrek</span></div></div>
 <p>Staat in <a href="../../groep/36/">groep 36: Noord-China &amp; Zuidoost-Siberië, Sachalin &amp; Mantsjoerije</a>, <a href="../../groep/39/">groep 39: Japan, Honshu</a>.</p>
 <div style="position:relative"><img class="plat" src="../../img/plattegrond.svg" alt="Plattegrond van het arboretum met de standplaatsen"><svg viewBox="0 0 2186 2036" style="position:absolute;inset:0;width:100%;height:100%"><circle cx="1548" cy="1112" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1566" cy="1061" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1983" cy="409" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1735" cy="857" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/></svg></div>
+<div id="in-wandelingen" data-n="Betula ermanii"></div>
 <h2>Standplaatsen</h2><table class="stand"><tr><th>Groep</th><th>Wat</th><th>Plantjaar</th><th>Omtrek</th><th></th></tr>
 <tr><td><a href="../../groep/36/">36A</a></td><td>reeks van 36</td><td>2013</td><td>38 cm</td><td><a href="../../kaart/?t=betula-ermanii&amp;ll=50.81285,4.5201">kaart</a></td></tr>
 <tr><td><a href="../../groep/39/">39B</a> <span class="muted">Honshu, gematigde zone</span></td><td>reeks van 3</td><td>2014</td><td>10 cm</td><td><a href="../../kaart/?t=betula-ermanii&amp;ll=50.80882,4.51657">kaart</a></td></tr>
@@ -35,9 +36,9 @@
 <script>(function(){var p=new URLSearchParams(location.search),w=p.get('w');if(!w)return;var s=+p.get('s')||0,k=p.get('van')==='kaart',R=document.body.dataset.root;
 fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(function(L){var W=L.filter(function(x){return x.id===w;})[0];if(!W)return;
 var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
-el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/'+w+'/#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
+el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/?w='+w+'#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
 (v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
-el.hidden=false;document.body.classList.add('met-terug');});})();</script>
+el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>

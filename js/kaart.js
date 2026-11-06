@@ -246,7 +246,7 @@
       .bindPopup('<b>Start en einde</b><br>' + esc(wand.start.naam)).addTo(lagen.wand);
     map.fitBounds(L.latLngBounds(wand.route).pad(0.1));
     $('wandeling').hidden = false;
-    $('woverzicht').href = ROOT + 'wandeling/' + wand.id + '/';
+    $('woverzicht').href = ROOT + 'wandeling/?w=' + wand.id;
     $('wtitel').textContent = wand.titel;
     $('wmeta').textContent = 'Start en einde: ' + wand.start.naam + ' · ' + wand.stops.length + ' stops · ongeveer ' + fmtM(wand.lengte) + ' · ' + wand.seizoen;
     $('wvorige').onclick = function () { wand.manueel = Math.max(0, volgendeIndex() - 1); wand.gezien = wand.gezien.filter(function (i) { return i < wand.manueel; }); bewaarGezien(); wandelingVolg(); };

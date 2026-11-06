@@ -21,7 +21,7 @@
 <h2>In het arboretum</h2><div class="feiten"><div><b>175</b><span>bomen</span></div><div><b>3</b><span>reeksen</span></div><div><b>2</b><span>losse bomen</span></div><div><b>1904</b><span>oudste aanplant</span></div><div><b>372 cm</b><span>grootste omtrek</span></div></div>
 <p>Staat in <a href="../../groep/30/">groep 30: Algerije, Baborgebergte</a>.</p>
 <div style="position:relative"><img class="plat" src="../../img/plattegrond.svg" alt="Plattegrond van het arboretum met de standplaatsen"><svg viewBox="0 0 2186 2036" style="position:absolute;inset:0;width:100%;height:100%"><circle cx="1289" cy="710" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1304" cy="746" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1448" cy="632" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1454" cy="621" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1479" cy="634" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/></svg></div>
-<div class="dash"><b>In de reuzen en oudjes</b> (stop 3: Cedrus libani subsp. atlantica)<p class="tekst">Omtrek 372 cm (diameter ongeveer 118 cm), geplant in 1904. Een afzonderlijk genummerde boom.</p><a href="../../wandeling/reuzen/">Naar de wandeling</a></div>
+<div id="in-wandelingen" data-n="Cedrus libani subsp. atlantica"></div>
 <h2>Standplaatsen</h2><table class="stand"><tr><th>Groep</th><th>Wat</th><th>Plantjaar</th><th>Omtrek</th><th></th></tr>
 <tr><td><a href="../../groep/30/">30</a> <span class="muted">Oost-Kabylië, Algerije</span></td><td>boom</td><td>1904</td><td>372 cm</td><td><a href="../../kaart/?t=cedrus-libani-subsp-atlantica&amp;ll=50.80982,4.51045">kaart</a></td></tr>
 <tr><td><a href="../../groep/30/">30</a> <span class="muted">Oost-Kabylië, Algerije</span></td><td>boom</td><td>1904</td><td>315 cm</td><td><a href="../../kaart/?t=cedrus-libani-subsp-atlantica&amp;ll=50.81014,4.51023">kaart</a></td></tr>
@@ -35,9 +35,9 @@
 <script>(function(){var p=new URLSearchParams(location.search),w=p.get('w');if(!w)return;var s=+p.get('s')||0,k=p.get('van')==='kaart',R=document.body.dataset.root;
 fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(function(L){var W=L.filter(function(x){return x.id===w;})[0];if(!W)return;
 var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
-el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/'+w+'/#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
+el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/?w='+w+'#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
 (v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
-el.hidden=false;document.body.classList.add('met-terug');});})();</script>
+el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>

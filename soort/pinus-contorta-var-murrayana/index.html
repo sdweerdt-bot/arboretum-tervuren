@@ -23,6 +23,7 @@
 <h2>In het arboretum</h2><div class="feiten"><div><b>31</b><span>bomen</span></div><div><b>3</b><span>reeksen</span></div><div><b>7</b><span>losse bomen</span></div><div><b>1950</b><span>oudste aanplant</span></div><div><b>148 cm</b><span>grootste omtrek</span></div></div>
 <p>Staat in <a href="../../groep/7/">groep 7: Californië, Sierra Nevada</a>, <a href="../../groep/9/">groep 9: Colorado &amp; New Mexico, Zuidelijk Rotsgebergte</a>.</p>
 <div style="position:relative"><img class="plat" src="../../img/plattegrond.svg" alt="Plattegrond van het arboretum met de standplaatsen"><svg viewBox="0 0 2186 2036" style="position:absolute;inset:0;width:100%;height:100%"><circle cx="637" cy="1483" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="611" cy="1452" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="644" cy="1471" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="646" cy="1441" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="644" cy="1448" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="642" cy="1457" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="619" cy="1460" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="625" cy="1458" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="648" cy="1477" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/><circle cx="1039" cy="933" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/></svg></div>
+<div id="in-wandelingen" data-n="Pinus contorta var. murrayana"></div>
 <h2>Standplaatsen</h2><table class="stand"><tr><th>Groep</th><th>Wat</th><th>Plantjaar</th><th>Omtrek</th><th></th></tr>
 <tr><td><a href="../../groep/7/">7</a> <span class="muted">Sierra Nevada, Californië</span></td><td>boom</td><td>1970</td><td>148 cm</td><td><a href="../../kaart/?t=pinus-contorta-var-murrayana&amp;ll=50.80328,4.50107">kaart</a></td></tr>
 <tr><td><a href="../../groep/7/">7</a> <span class="muted">Sierra Nevada, Californië</span></td><td>boom</td><td>1970</td><td>120 cm</td><td><a href="../../kaart/?t=pinus-contorta-var-murrayana&amp;ll=50.80317,4.50096">kaart</a></td></tr>
@@ -41,9 +42,9 @@
 <script>(function(){var p=new URLSearchParams(location.search),w=p.get('w');if(!w)return;var s=+p.get('s')||0,k=p.get('van')==='kaart',R=document.body.dataset.root;
 fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(function(L){var W=L.filter(function(x){return x.id===w;})[0];if(!W)return;
 var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
-el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/'+w+'/#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
+el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/?w='+w+'#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
 (v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
-el.hidden=false;document.body.classList.add('met-terug');});})();</script>
+el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>

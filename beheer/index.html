@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beheer wandelingen | Arboretum Tervuren</title>
+<meta name="description" content="Beheer van de wandelingen">
+<meta name="theme-color" content="#0b4a45">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icoon-192.png">
+<link rel="apple-touch-icon" href="../icoon-192.png">
+<link rel="stylesheet" href="../css/site.css">
+<link rel="stylesheet" href="../lib/leaflet-1.9.4/leaflet.css">
+</head>
+<body data-root="../" class="kaartpagina">
+<header class="top"><a class="home" href="../">Arboretum Tervuren</a><nav><a href="../kaart/">Kaart</a><a href="../wandelingen/">Wandelingen</a><a href="../soorten/">Soorten</a></nav></header>
+<main class="beheer">
+<h1>Wandelingen beheren</h1>
+<p class="muted">Pas wandelingen aan, maak nieuwe of zet een opgenomen wandeling om. Alles wordt eerst als concept op dit toestel bewaard; met <b>Publiceren</b> komt het online.</p>
+<p id="bmeld" class="melding" hidden></p>
+<div id="concept" class="dash" hidden><p id="conceptinfo"></p><div class="rij"><button type="button" class="knop" id="b-concept">Concept verder bewerken</button><button type="button" class="knop" id="b-online">Concept weggooien</button></div></div>
+<section class="paneel"><h2>Wandeling</h2>
+<label class="vh" for="wkeuze">Kies een wandeling</label><select id="wkeuze" class="bveld"></select>
+<div class="d-acties"><button type="button" id="b-nieuw">+ Nieuwe wandeling</button><button type="button" id="b-kopie">Kopie maken</button><button type="button" id="b-op">↑ hoger in lijst</button><button type="button" id="b-neer">↓ lager</button><button type="button" id="b-weg">Verwijderen</button></div>
+<label>Titel<input id="f-titel" class="bveld"></label>
+<p class="muted">Adres: <code id="f-id"></code> · <a id="f-link" href="#" target="_blank">bekijk op de site</a> · <span id="f-info"></span></p>
+<div class="rij2"><label>Kleur<input type="color" id="f-kleur"></label><label>Soort<select id="f-soort" class="bveld"><option value="thema">themawandeling</option><option value="officieel">bewegwijzerde lus</option></select></label></div>
+<label id="f-folderrij">Bewegwijzering<input id="f-folder" class="bveld" placeholder="bv. 3,8 km, blauwe bewegwijzering"></label>
+<label>Beste periode<input id="f-seizoen" class="bveld" placeholder="bv. half oktober – begin november"></label>
+<label>Inleiding<textarea id="f-intro" rows="4" class="bveld"></textarea></label>
+<label class="vink"><input type="checkbox" id="f-verborgen"> Verbergen op de site (nog niet tonen)</label>
+</section>
+<section class="paneel"><h2>Kaart en route</h2>
+<p class="muted">Start en einde liggen altijd aan Eikestraat 102 (S). De route wordt langs de paden berekend in de volgorde van de stops.</p>
+<div class="d-acties"><button type="button" id="b-stopkaart" class="groot">Stop toevoegen (tik op de kaart)</button></div>
+<div id="bkaart"></div>
+<div class="d-acties"><button type="button" id="b-route">Route herberekenen</button><button type="button" id="b-opt">Kortste volgorde</button>
+<label class="kn" for="b-opname">Opgenomen wandeling inladen</label><input type="file" id="b-opname" accept="application/json,.json" hidden></div>
+</section>
+<section class="paneel"><h2>Stops</h2><datalist id="soortenlijst"></datalist><ol id="stops" class="bstops"></ol></section>
+<section class="paneel"><h2>Bewaren</h2>
+<div class="rij"><button type="button" class="knop hoofd" id="b-publiceer">Publiceren op de website</button><button type="button" class="knop" id="b-download">Download als bestand</button></div>
+<details id="gh"><summary>Publiceren instellen (eenmalig per toestel)</summary>
+<p>De site staat op GitHub. Om vanaf deze pagina te publiceren, heeft dit toestel een sleutel nodig die enkel deze repository mag aanpassen:</p>
+<ol class="herk"><li>Ga op github.com naar <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
+<li>Kies bij <b>Repository access</b>: <i>Only select repositories</i> → <code>arboretum-tervuren</code>.</li>
+<li>Bij <b>Permissions → Repository permissions → Contents</b>: <i>Read and write</i>. Zet een vervaldatum naar keuze.</li>
+<li>Kopieer de sleutel en plak hem hieronder. Hij wordt enkel op dit toestel bewaard.</li></ol>
+<label>GitHub-sleutel<input type="password" id="gh-token" class="bveld" autocomplete="off"></label>
+<div class="rij"><button type="button" class="knop" id="gh-bewaar">Sleutel bewaren</button><button type="button" class="knop" id="gh-wis">Sleutel wissen</button></div>
+<p class="muted">Liever geen sleutel? Gebruik <b>Download als bestand</b> en bezorg het bestand aan Claude.</p></details>
+</section></main>
+<script type="module" src="../lib/leaflet-1.9.4/leaflet-global.js"></script>
+<script src="../js/beheer.js"></script>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
+</body>
+</html>

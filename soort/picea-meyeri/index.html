@@ -21,6 +21,7 @@
 <h2>In het arboretum</h2><div class="feiten"><div><b>1</b><span>bomen</span></div><div><b>1</b><span>reeksen</span></div><div><b>0</b><span>losse bomen</span></div><div><b>1971</b><span>oudste aanplant</span></div></div>
 <p>Staat in <a href="../../groep/37/">groep 37: China, Midden-Chinese provincies</a>.</p>
 <div style="position:relative"><img class="plat" src="../../img/plattegrond.svg" alt="Plattegrond van het arboretum met de standplaatsen"><svg viewBox="0 0 2186 2036" style="position:absolute;inset:0;width:100%;height:100%"><circle cx="1879" cy="546" r="18" fill="#e65100" stroke="#fff" stroke-width="5"/></svg></div>
+<div id="in-wandelingen" data-n="Picea meyeri"></div>
 <h2>Standplaatsen</h2><table class="stand"><tr><th>Groep</th><th>Wat</th><th>Plantjaar</th><th>Omtrek</th><th></th></tr>
 <tr><td><a href="../../groep/37/">37C</a> <span class="muted">Provincies Sichuan en Shaanxi</span></td><td>reeks van ?</td><td>1971</td><td>–</td><td><a href="../../kaart/?t=picea-meyeri&amp;ll=50.81162,4.51862">kaart</a></td></tr>
 </table>
@@ -30,9 +31,9 @@
 <script>(function(){var p=new URLSearchParams(location.search),w=p.get('w');if(!w)return;var s=+p.get('s')||0,k=p.get('van')==='kaart',R=document.body.dataset.root;
 fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(function(L){var W=L.filter(function(x){return x.id===w;})[0];if(!W)return;
 var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
-el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/'+w+'/#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
+el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/?w='+w+'#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
 (v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
-el.hidden=false;document.body.classList.add('met-terug');});})();</script>
+el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>
