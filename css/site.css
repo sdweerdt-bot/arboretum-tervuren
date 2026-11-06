@@ -307,3 +307,19 @@ details.gids > summary { cursor: pointer; font-weight: 700; color: var(--kl, #13
 .paspoort { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .paspoort div { border: 2px dashed #ef6c00; border-radius: 50%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; padding: 6px; }
 @media print { .speur { font-size: 13px; } .pagebreak { break-before: page; } }
+
+/* quiz */
+.qkaart { background: #f7f7f2; border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+.qopt { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 10px 12px; border: 1px solid #bbb; border-radius: 8px; background: #fff; font-size: 16px; cursor: pointer; }
+.qopt.goed { background: #e8f5e9; border-color: #2e7d32; } .qopt.fout { background: #ffebee; border-color: #c62828; }
+.qflip details summary { cursor: pointer; }
+/* flyer */
+.fl { max-width: 720px; margin: 0 auto; }
+.fl .flfoto { width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px; }
+.fl h1 { color: #2e7d32; margin: 4px 0; }
+/* feedback */
+.fbpag label { display: block; margin: 10px 0; }
+.fbpag textarea, .fbpag input[type=text], .fbpag select { width: 100%; font-size: 16px; padding: 6px; box-sizing: border-box; }
+.fbv { border: 1px solid #ddd; border-radius: 8px; margin: 8px 0; }
+.fbv label { display: inline-block; margin: 4px 10px 4px 0; color: #e0a43a; }
+@media print { .qopt { border: 1px solid #999; } .fl .flfoto { max-height: 220px; } }

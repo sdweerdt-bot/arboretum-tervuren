@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feedback | Arboretum Tervuren</title>
+<meta name="description" content="Geef feedback op je wandeling.">
+<meta name="theme-color" content="#0b4a45">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icoon-192.png">
+<link rel="apple-touch-icon" href="../icoon-192.png">
+<link rel="stylesheet" href="../css/site.css?v=d256d574">
+
+</head>
+<body data-root="../" class="">
+<header class="top"><a class="home" href="../">Arboretum Tervuren</a><nav><a href="../kaart/">Kaart</a><a href="../wandelingen/">Wandelingen</a><a href="../soorten/">Soorten</a><a href="../boek/">Het boek</a></nav></header>
+<main class="fbpag">
+<h1>Hoe was je wandeling?</h1>
+<p class="tekst">Bedankt om mee te wandelen! Je mening helpt om de wandelingen nog beter te maken. Het invullen duurt een minuutje.</p>
+<form id="fb">
+<label>Welke wandeling deed je? <select name="w" id="fbw"><option value="">Kies…</option></select></label>
+<fieldset class="fbv"><legend>Hoe vond je de wandeling in het algemeen?</legend><label><input type="radio" name="v0" value="1"> ★</label><label><input type="radio" name="v0" value="2"> ★★</label><label><input type="radio" name="v0" value="3"> ★★★</label><label><input type="radio" name="v0" value="4"> ★★★★</label><label><input type="radio" name="v0" value="5"> ★★★★★</label></fieldset><fieldset class="fbv"><legend>Waren de verhalen boeiend?</legend><label><input type="radio" name="v1" value="1"> ★</label><label><input type="radio" name="v1" value="2"> ★★</label><label><input type="radio" name="v1" value="3"> ★★★</label><label><input type="radio" name="v1" value="4"> ★★★★</label><label><input type="radio" name="v1" value="5"> ★★★★★</label></fieldset><fieldset class="fbv"><legend>Was de lengte en het tempo goed?</legend><label><input type="radio" name="v2" value="1"> ★</label><label><input type="radio" name="v2" value="2"> ★★</label><label><input type="radio" name="v2" value="3"> ★★★</label><label><input type="radio" name="v2" value="4"> ★★★★</label><label><input type="radio" name="v2" value="5"> ★★★★★</label></fieldset><fieldset class="fbv"><legend>Zou je deze wandeling aanraden aan vrienden?</legend><label><input type="radio" name="v3" value="1"> ★</label><label><input type="radio" name="v3" value="2"> ★★</label><label><input type="radio" name="v3" value="3"> ★★★</label><label><input type="radio" name="v3" value="4"> ★★★★</label><label><input type="radio" name="v3" value="5"> ★★★★★</label></fieldset>
+<label>Wat vond je het mooiste of leukste moment?<textarea name="mooi" rows="2"></textarea></label>
+<label>Wat kan beter?<textarea name="beter" rows="2"></textarea></label>
+<label>Welke wandeling of welk thema zou je nog willen?<textarea name="wens" rows="2"></textarea></label>
+<label>Je naam (niet verplicht)<input name="naam" type="text"></label>
+<div class="knoppen"><button type="button" class="knop hoofd" id="fbdeel">Versturen naar de gids</button><button type="button" class="knop" id="fbkopie">Tekst kopiëren</button><button type="button" class="knop geenprint" onclick="window.print()">Afdrukken als formulier</button></div>
+<p class="muted" id="fbmsg">Bij "Versturen" kies je zelf hoe je het bericht stuurt (WhatsApp, e-mail, sms…). Er wordt niets opgeslagen op deze website.</p>
+</form>
+<script>
+(function(){
+var f=document.getElementById('fb');
+fetch('../data/wandelingen.json').then(function(r){return r.json();}).then(function(W){var s=document.getElementById('fbw');W.forEach(function(w){var o=document.createElement('option');o.value=w.titel;o.textContent=w.titel;s.appendChild(o);});var q=new URLSearchParams(location.search).get('w');if(q){var x=W.filter(function(a){return a.id===q;})[0];if(x)s.value=x.titel;}});
+function tekst(){var d=new FormData(f),r=['Feedback wandeling Arboretum Tervuren','Wandeling: '+(d.get('w')||'-')];
+["Hoe vond je de wandeling in het algemeen?", "Waren de verhalen boeiend?", "Was de lengte en het tempo goed?", "Zou je deze wandeling aanraden aan vrienden?"].forEach(function(v,i){r.push(v+' '+(d.get('v'+i)?d.get('v'+i)+'/5':'-'));});
+['mooi','beter','wens','naam'].forEach(function(k,i){var l=['Mooiste moment','Kan beter','Wens','Naam'][i];if(d.get(k))r.push(l+': '+d.get(k));});return r.join('\n');}
+document.getElementById('fbkopie').onclick=function(){navigator.clipboard.writeText(tekst()).then(function(){document.getElementById('fbmsg').textContent='Gekopieerd: plak het in een bericht aan je gids.';});};
+document.getElementById('fbdeel').onclick=function(){var t=tekst();if(navigator.share)navigator.share({title:'Feedback wandeling',text:t}).catch(function(){});else location.href='mailto:?subject='+encodeURIComponent('Feedback wandeling Arboretum Tervuren')+'&body='+encodeURIComponent(t);};
+})();
+</script>
+</main>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../boek/">het boek</a> · <a href="../gidsen/">voor gidsen</a> · <a href="../speurkaart/">speurkaart</a> · <a href="../quiz/">quiz</a> · <a href="../feedback/">feedback</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lente in het arboretum | Arboretum Tervuren</title>
+<meta name="description" content="Frisgroene lorken, bloeiende magnolia’s en meidoorns">
+<meta name="theme-color" content="#0b4a45">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icoon-192.png">
+<link rel="apple-touch-icon" href="../../icoon-192.png">
+<link rel="stylesheet" href="../../css/site.css?v=d256d574">
+
+</head>
+<body data-root="../../" class="">
+<header class="top"><a class="home" href="../../">Arboretum Tervuren</a><nav><a href="../../kaart/">Kaart</a><a href="../../wandelingen/">Wandelingen</a><a href="../../soorten/">Soorten</a><a href="../../boek/">Het boek</a></nav></header>
+<main class="flyer">
+<div class="knoppen geenprint"><button type="button" class="knop hoofd" onclick="window.print()">Afdrukken of opslaan als pdf</button><span class="muted">Andere seizoenen: <a href="../../flyer/zomer/">zomer</a> · <a href="../../flyer/herfst/">herfst</a> · <a href="../../flyer/winter/">winter</a></span></div>
+<article class="fl">
+<img class="flfoto" src="../../img/wandelingen/boek/sudetenlork-kruinen.jpg" alt="">
+<p class="tlabel">Geografisch Arboretum Tervuren</p>
+<h1>Lente in het arboretum</h1><p class="tkop">Frisgroene lorken, bloeiende magnolia’s en meidoorns</p>
+<p>Wandel in één namiddag rond de wereld: bossen van Amerika, Europa en Azië, aangeplant sinds 1902 op het domein van de Koninklijke Schenking.</p>
+<h2>Wat valt er nu te beleven?</h2><ul><li>De Sudetenlorken van groep 21 lopen uit in een betoverend lichtgroen.</li><li>Magnolia’s bloeien in groep 15, de meidoorns aan de Voervijver en in groep 29 kleuren wit en geurig.</li><li>Rode mannelijke kegeltjes aan de Oost-Aziatische spar in groep 36.</li><li>Kikkers en padden trekken naar de poelen.</li></ul>
+<h2>Aanbevolen wandelingen</h2><ul class="flw"><li data-w="natuur-kapucijnenbos"><a href="../../wandeling/?w=natuur-kapucijnenbos">natuur-kapucijnenbos</a></li><li data-w="levende-fossielen"><a href="../../wandeling/?w=levende-fossielen">levende-fossielen</a></li><li data-w="families"><a href="../../wandeling/?w=families">families</a></li></ul>
+<table class="tfeit"><tr><th>Wanneer</th><td>______________________</td></tr><tr><th>Vertrek</th><td>Eikestraat 102, 3080 Tervuren (ingang Eikestraat)</td></tr><tr><th>Prijs</th><td>______________________</td></tr><tr><th>Inschrijven</th><td>______________________</td></tr></table>
+<p class="tlink">Meer info: sdweerdt-bot.github.io/arboretum-tervuren</p>
+</article>
+<script>fetch('../../data/wandelingen.json').then(function(r){return r.json();}).then(function(W){document.querySelectorAll('.flw li').forEach(function(li){var x=W.filter(function(a){return a.id===li.dataset.w;})[0];if(x)li.querySelector('a').textContent=x.titel+' (± '+(Math.round(x.lengte/100)/10).toString().replace('.',',')+' km)';else li.remove();});});</script>
+</main>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../boek/">het boek</a> · <a href="../../gidsen/">voor gidsen</a> · <a href="../../speurkaart/">speurkaart</a> · <a href="../../quiz/">quiz</a> · <a href="../../feedback/">feedback</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
+</body>
+</html>

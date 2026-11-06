@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz | Arboretum Tervuren</title>
+<meta name="description" content="Quiz na de wandeling in het Geografisch Arboretum Tervuren.">
+<meta name="theme-color" content="#0b4a45">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icoon-192.png">
+<link rel="apple-touch-icon" href="../icoon-192.png">
+<link rel="stylesheet" href="../css/site.css?v=d256d574">
+
+</head>
+<body data-root="../" class="">
+<header class="top"><a class="home" href="../">Arboretum Tervuren</a><nav><a href="../kaart/">Kaart</a><a href="../wandelingen/">Wandelingen</a><a href="../soorten/">Soorten</a><a href="../boek/">Het boek</a></nav></header>
+<main class="quizpag">
+<h1>Quiz na de wandeling</h1>
+<p class="tekst">Twaalf vragen over het arboretum. Speel ze op je gsm, of laat de groep samen kiezen. Wie haalt de hoogste score?</p>
+<div id="wq"></div>
+<div id="quiz"></div>
+<div class="knoppen geenprint"><button type="button" class="knop" onclick="window.print()">Afdrukken als quizblad</button><a class="knop" href="../wandelingen/">Alle wandelingen</a></div>
+<script>
+(function(){
+var Q=[{"v": "In welk jaar begon de aanleg van het arboretum?", "o": ["1897", "1902", "1923", "1958"], "j": 1, "u": "In april 1902, nog vóór de staat de schenking van Leopold II aanvaardde."}, {"v": "Hoe is het arboretum ingedeeld?", "o": ["Alfabetisch per boomsoort", "Als een gedraaide wereldkaart, per streek", "Volgens de grootte van de bomen", "Per bloeiseizoen"], "j": 1, "u": "Amerika ligt in het westen van het domein, Europa en Azië in het oosten."}, {"v": "Hoeveel groepen telt het arboretum?", "o": ["20", "40", "46", "100"], "j": 1, "u": "Twintig voor Amerika, twintig voor Europa en Azië. In 1905 waren het er nog 46."}, {"v": "Welke boom is de dikste van het arboretum?", "o": ["Een zomereik", "Een mammoetboom", "Een atlasceder", "Een rode beuk"], "j": 1, "u": "Een mammoetboom van 1902 in groep 7, met 625 cm omtrek."}, {"v": "Waarom heet de mammoetboom soms \"boksboom\"?", "o": ["Hij heeft de vorm van een bokshandschoen", "Je kunt op zijn zachte schors kloppen zonder pijn", "Er werd onder geboksd", "Hij is genoemd naar een bokser"], "j": 1, "u": "De dikke, vezelige schors is zacht en beschermt de boom tegen bosbranden."}, {"v": "Welke boom is een \"levend fossiel\"?", "o": ["De ginkgo", "De paardenkastanje", "De zomereik", "De berk"], "j": 0, "u": "De ginkgofamilie bestaat al meer dan 250 miljoen jaar."}, {"v": "Wat betekent de naam Tervuren?", "o": ["Ter vuren: bij het vuur", "Ter Voer: bij de Voer", "Bij de toren", "Koninklijk bos"], "j": 1, "u": "De Voer ontspringt aan de Voervijver, aan de rand van het domein."}, {"v": "Waarom ontbreken de voorjaarsbloemen in een groot deel van het domein?", "o": ["Ze werden geplukt", "Het was in de 19e eeuw een tijd akkerland", "Er is te veel schaduw", "De herten eten ze op"], "j": 1, "u": "Oud-bosplanten zoals bosanemoon veroveren nieuw bos maar heel traag."}, {"v": "Welke boom ruikt in de herfst naar karamel?", "o": ["De katsura", "De ceder", "De walnoot", "De den"], "j": 0, "u": "De gevallen bladeren van de katsura geuren naar gebrande suiker."}, {"v": "Welke ziekte doodde bijna alle Amerikaanse kastanjes?", "o": ["Iepenziekte", "Kastanjeziekte, een schimmel uit Azië", "Essentaksterven", "Mineermot"], "j": 1, "u": "Rond 1905 dook de kastanjeziekte op in New York; binnen 50 jaar was 3,6 miljoen ha aangetast."}, {"v": "Welke kerstboom komt uit de Kaukasus?", "o": ["De fijnspar", "De Nordmannspar", "De blauwspar", "De douglas"], "j": 1, "u": "De Nordmannspar staat in groep 32 en verliest zijn naalden minder snel dan de fijnspar."}, {"v": "Hoeveel naalden zitten er in een bundel van de Weymouthden?", "o": ["2", "3", "5", "7"], "j": 2, "u": "Vijfnaalddennen zoals de Weymouthden en de tranenden hebben bundels van vijf."}], i=0, score=0, el=document.getElementById('quiz');
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function toon(){
+  if(i>=Q.length){el.innerHTML='<div class="qkaart"><h2>Klaar! Score: '+score+' / '+Q.length+'</h2><p>'+(score>=10?'Boomkenner!':score>=6?'Goed gedaan, wereldreiziger!':'Volgende keer beter: kom nog eens wandelen!')+'</p><button class="knop hoofd" type="button" id="opnieuw">Opnieuw</button></div>';document.getElementById('opnieuw').onclick=function(){i=0;score=0;toon();};return;}
+  var q=Q[i];
+  el.innerHTML='<div class="qkaart"><p class="muted">Vraag '+(i+1)+' van '+Q.length+' · score '+score+'</p><h2>'+esc(q.v)+'</h2>'+q.o.map(function(o,k){return '<button type="button" class="qopt" data-k="'+k+'">'+esc(o)+'</button>';}).join('')+'<p class="quitleg"></p></div>';
+  el.querySelectorAll('.qopt').forEach(function(b){b.onclick=function(){
+    var k=+b.dataset.k; el.querySelectorAll('.qopt').forEach(function(x){x.disabled=true; if(+x.dataset.k===q.j)x.classList.add('goed');});
+    if(k===q.j)score++; else b.classList.add('fout');
+    el.querySelector('.quitleg').innerHTML=esc(q.u)+' <button type="button" class="knop" id="volg">Volgende</button>';
+    document.getElementById('volg').onclick=function(){i++;toon();};
+  };});
+}
+toon();
+// vragen van een specifieke wandeling (?w=id)
+var w=new URLSearchParams(location.search).get('w');
+if(w)fetch('../data/wandelingen.json').then(function(r){return r.json();}).then(function(W){
+  var x=W.filter(function(a){return a.id===w;})[0]; if(!x)return;
+  var v=x.stops.filter(function(s){return s.vraag;});
+  if(!v.length)return;
+  document.getElementById('wq').innerHTML='<h2>Vragen van de wandeling: '+esc(x.titel)+'</h2><p class="muted">Tik op een kaart om het antwoord te zien.</p><div class="qflip">'+v.map(function(s,k){return '<details class="qkaart"><summary><b>'+(k+1)+'.</b> '+esc(s.vraag)+'</summary><p>'+esc(s.antwoord||'')+'</p></details>';}).join('')+'</div><h2>Algemene quiz</h2>';
+});
+})();
+</script>
+</main>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../boek/">het boek</a> · <a href="../gidsen/">voor gidsen</a> · <a href="../speurkaart/">speurkaart</a> · <a href="../quiz/">quiz</a> · <a href="../feedback/">feedback</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
+</body>
+</html>
