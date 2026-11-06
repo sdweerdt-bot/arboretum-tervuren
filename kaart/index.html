@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaart – waar ben ik? | Arboretum Tervuren</title>
+<meta name="description" content="Kaart met GPS: welke bomen staan er bij jou in het arboretum?">
+<meta name="theme-color" content="#0b4a45">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icoon-192.png">
+<link rel="apple-touch-icon" href="../icoon-192.png">
+<link rel="stylesheet" href="../css/site.css">
+<link rel="stylesheet" href="../lib/leaflet-1.9.4/leaflet.css">
+</head>
+<body data-root="../" class="kaartpagina">
+<header class="top"><a class="home" href="../">Arboretum Tervuren</a><nav><a href="../kaart/">Kaart</a><a href="../wandelingen/">Wandelingen</a><a href="../soorten/">Soorten</a></nav></header>
+<main class="kaart">
+<div class="balk"><div class="zoekbox"><input type="search" id="zoek" placeholder="Zoek een soort op de kaart…" aria-label="Zoek een soort" autocomplete="off"><ul id="zoekres" class="lijst" hidden></ul></div>
+<button id="waar" class="knop hoofd" type="button">Waar ben ik?</button></div>
+<p id="handmatigrij" class="muted" hidden><label><input type="checkbox" id="handmatig"> Tik zelf op de kaart waar je staat (als GPS niet werkt)</label></p>
+<p id="melding" class="melding" hidden></p>
+<div id="map" aria-label="Kaart"></div>
+<section class="paneel" id="wandeling" hidden><h2 id="wtitel"></h2><p id="wmeta" class="muted"></p><div id="wvolg"></div>
+<details><summary>Alle stops</summary><ul id="wlijst"></ul></details><div class="d-acties"><button type="button" id="wvorige">← vorige</button><button type="button" id="wvolgende">volgende →</button><button type="button" id="wreset">opnieuw</button></div></section>
+
+<details class="legende"><summary>Legende</summary><div><span><i class="naald"></i>naaldbomen</span><span><i class="loof"></i>loofbomen</span><span>rechthoek = reeks (groep bomen), bol = afzonderlijke boom</span><span><i class="pad"></i>arboretumpad</span><span>groen vlak = Nieuwe Wereld, bruin vlak = Oude Wereld</span></div></details>
+<section class="paneel" id="dichtbij"><h2>Dichtbij <span id="dstat" class="muted"></span></h2>
+<div class="straal">binnen <button type="button" data-r="30">30 m</button><button type="button" data-r="60" class="aan">60 m</button><button type="button" data-r="150">150 m</button></div>
+<div id="dlijst"><p class="muted">Tik op <b>Waar ben ik?</b>: je ziet dan in welke groep je staat en welke soorten er in de buurt staan, de dichtste eerst.</p></div></section>
+<section class="paneel" id="opnemen"><h2>Wandeling opnemen</h2>
+<p class="muted">Neem je eigen tocht op: je GPS-spoor wordt bewaard op dit toestel. Met <b>Stop hier</b> markeer je een plek, met een notitie; de bomen in de buurt worden automatisch genoteerd. Laat het scherm aan tijdens de opname.</p>
+<div class="rij"><button id="opstart" class="knop hoofd" type="button">Start opname</button><button id="ophier" class="knop" type="button" disabled>Stop hier</button></div>
+<input id="opnotitie" type="text" placeholder="Notitie bij de volgende stop (optioneel)" aria-label="Notitie">
+<p id="opstat" class="muted"></p><ul id="oplijst"></ul></section>
+<p class="bronnen">Bomen, reeksen, groepen en paden: interactieve kaart van het Geografisch Arboretum Tervuren (<a href="https://www.arboretum-tervuren.be">arboretum-tervuren.be</a>) · achtergrond © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-bijdragers</a></p>
+</main>
+<script type="module" src="../lib/leaflet-1.9.4/leaflet-global.js"></script>
+<script src="../js/kaart.js"></script>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
+</body>
+</html>
