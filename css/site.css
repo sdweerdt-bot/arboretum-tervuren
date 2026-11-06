@@ -328,3 +328,42 @@ details.gids > summary { cursor: pointer; font-weight: 700; color: var(--kl, #13
 .opaudio label{display:block;margin:.35rem 0}
 .opaudio label.vink{display:flex;gap:.5rem;align-items:flex-start}
 .opaudio input[type=text]{width:100%;margin-top:.2rem}
+/* aandenken */
+.aandopties{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;margin:.6rem 0}
+.aandopties label{display:flex;flex-direction:column;font-size:.9rem}
+.aandopties label.vink,.aandkeuze label.vink{flex-direction:row;gap:.4rem;align-items:center}
+.aandkeuze{display:flex;gap:1.2rem;flex-wrap:wrap;margin:.4rem 0 1rem}
+.vel{margin:1rem 0}
+main.aand{max-width:none}
+.aand .geenprint{max-width:60rem}
+.bwrij{display:flex;flex-wrap:wrap;gap:0}
+.bwijzer{box-sizing:border-box;width:5.4cm;height:18.6cm;border:1px dashed #9a9a9a;padding:.5cm .45cm;display:flex;flex-direction:column;align-items:center;text-align:center;background:linear-gradient(#fbf8ef,#f1ead6);font-family:Georgia,serif;color:#2c2a22;break-inside:avoid}
+.bwtop .blad{width:2.6cm;height:2.6cm}
+.bwkop{font-variant:small-caps;letter-spacing:.06em;font-size:.82rem;margin:.3cm 0 .1cm;color:#6b5a2c}
+.bwwand{font-weight:bold;font-size:1rem;margin:0 0 .4cm;line-height:1.2}
+.bwweet{font-size:.95rem;line-height:1.4;margin:0;flex:1}
+.bwweet span{display:block;font-style:italic;color:#6b5a2c;margin-bottom:.15cm}
+.bwboom{font-size:.75rem;font-style:italic;color:#555;margin:.2cm 0}
+.bwvoet{font-size:.68rem;color:#6b5a2c;border-top:1px solid #c9b98f;padding-top:.2cm;margin:0;width:100%}
+.certrij{display:grid;grid-template-columns:repeat(2,14.1cm);gap:0}
+.certkaart,.bladkaart{box-sizing:border-box;width:14.1cm;height:9.8cm;border:1px dashed #9a9a9a;padding:.6cm .8cm;font-family:Georgia,serif;color:#2c2a22;position:relative;background:#fffdf6;break-inside:avoid;text-align:center}
+.certkaart{border:1px dashed #9a9a9a;box-shadow:inset 0 0 0 .25cm #fffdf6,inset 0 0 0 .3cm #b49a55}
+.certkaart .blad{position:absolute;right:.7cm;top:.6cm;width:1.6cm;height:1.6cm;opacity:.85}
+.ckop{font-variant:small-caps;letter-spacing:.08em;font-size:1.35rem;margin:.5cm 0 .3cm;color:#5a4a1c}
+.ctekst{font-size:1rem;line-height:1.5;margin:0 .4cm}
+.lijn{display:inline-block;width:8cm;border-bottom:1px solid #555;height:1.1em}
+.cstreken{font-size:.8rem;font-style:italic;color:#4a5a2a;margin:.35cm .3cm;line-height:1.4}
+.cvoet{position:absolute;left:0;right:0;bottom:.55cm;font-size:.72rem;color:#6b5a2c;margin:0}
+.plak{border:2px dashed #b9a97c;border-radius:8px;height:4.3cm;margin:.2cm 1.5cm;display:flex;align-items:center;justify-content:center;color:#b9a97c;font-style:italic}
+.bkvelden{text-align:left;margin:.3cm 1.5cm 0;font-size:.85rem;line-height:1.7}
+.bkvelden .lijn{width:6cm}
+.bktip{font-size:.7rem;color:#666;margin:.2cm 1.2cm 0;font-style:italic}
+@media print{
+ .aand .geenprint,header,footer,nav{display:none!important}
+ main.aand{max-width:none!important;margin:0!important;padding:0!important}
+ .vel{margin:0}.bwvel,.certvel{break-after:page}
+ .bwrij{flex-wrap:wrap}
+ .vel[hidden]{display:none}
+ @page{size:A4 landscape;margin:.6cm}
+ .bwijzer{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

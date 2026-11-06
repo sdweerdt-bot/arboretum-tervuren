@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aandenken | Arboretum Tervuren</title>
+<meta name="description" content="Bladwijzers, wereldreizigerscertificaat en bladkaart om mee te geven na een wandeling.">
+<meta name="theme-color" content="#0b4a45">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icoon-192.png">
+<link rel="apple-touch-icon" href="../icoon-192.png">
+<link rel="stylesheet" href="../css/site.css?v=f291d7de">
+
+</head>
+<body data-root="../" class="">
+<header class="top"><a class="home" href="../">Arboretum Tervuren</a><nav><a href="../kaart/">Kaart</a><a href="../wandelingen/">Wandelingen</a><a href="../soorten/">Soorten</a><a href="../boek/">Het boek</a></nav></header>
+<main class="aand">
+<div class="geenprint">
+<h1>Een aandenken om mee te geven</h1>
+<p class="tekst">Druk af op stevig papier (160–250 g), knip langs de stippellijnen en geef het mee na de wandeling. Alles wordt automatisch gevuld met de gegevens van de gekozen wandeling.</p>
+<div class="aandopties">
+<label>Wandeling <select id="aw"></select></label>
+<label>Datum <input id="ad" type="text"></label>
+<label>Aantal bladwijzers <select id="an"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select></label>
+<label class="vink"><input type="checkbox" id="aleeg" checked> Lijn voor de naam op het certificaat leeg laten (invullen met de hand)</label>
+</div>
+<div class="knoppen"><button type="button" class="knop hoofd" onclick="window.print()">Afdrukken of opslaan als pdf</button><a class="knop" id="aterug" href="../wandelingen/">Terug naar de wandeling</a></div>
+<p class="muted">Drie soorten aandenken: <b>bladwijzers</b> met een weetje van onderweg, een <b>wereldreizigerscertificaat</b> met de streken die je vandaag "bezocht", en een <b>bladkaart</b> om thuis je mooiste blad op te plakken. Kies hieronder welke je afdrukt.</p>
+<div class="aandkeuze"><label class="vink"><input type="checkbox" data-blok="bw" checked> Bladwijzers</label><label class="vink"><input type="checkbox" data-blok="cert" checked> Certificaten</label><label class="vink"><input type="checkbox" data-blok="bk" checked> Bladkaarten</label></div>
+</div>
+<section id="bw" class="vel bwvel"></section>
+<section id="cert" class="vel certvel"></section>
+<section id="bk" class="vel bkvel"></section>
+<script>
+(function(){
+var SV={"ginkgo": "<svg class=\"blad\" viewBox=\"0 0 100 100\" aria-hidden=\"true\"><path d=\"M50 96 L50 58 M50 58 C20 56 6 36 8 18 C24 10 40 8 50 16 C60 8 76 10 92 18 C94 36 80 56 50 58 Z M50 16 L50 40\" fill=\"#e9b949\" stroke=\"#8a6a1c\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><path d=\"M50 58 L22 24 M50 58 L36 14 M50 58 L64 14 M50 58 L78 24\" stroke=\"#b88a2a\" stroke-width=\"1.2\" fill=\"none\"/></svg>", "eik": "<svg class=\"blad\" viewBox=\"0 0 100 100\" aria-hidden=\"true\"><path d=\"M50 98 L50 80 M50 80 C44 80 40 74 42 68 C34 70 30 64 34 58 C26 58 24 50 30 46 C24 42 26 34 34 34 C30 26 36 20 42 24 C42 14 48 8 50 6 C52 8 58 14 58 24 C64 20 70 26 66 34 C74 34 76 42 70 46 C76 50 74 58 66 58 C70 64 66 70 58 68 C60 74 56 80 50 80 Z\" fill=\"#7a9a3a\" stroke=\"#3f5a1a\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><path d=\"M50 80 L50 12 M50 66 L38 62 M50 52 L34 46 M50 40 L38 32 M50 66 L62 62 M50 52 L66 46 M50 40 L62 32\" stroke=\"#3f5a1a\" stroke-width=\"1.2\" fill=\"none\"/></svg>", "esdoorn": "<svg class=\"blad\" viewBox=\"0 0 100 100\" aria-hidden=\"true\"><path d=\"M50 98 L50 76 M50 76 L36 80 L38 70 L18 64 L26 58 L8 42 L22 40 L18 26 L34 32 L36 18 L44 26 L50 6 L56 26 L64 18 L66 32 L82 26 L78 40 L92 42 L74 58 L82 64 L62 70 L64 80 Z\" fill=\"#c8502e\" stroke=\"#7a2a14\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><path d=\"M50 76 L50 12 M50 60 L22 44 M50 60 L78 44 M50 66 L30 64 M50 66 L70 64\" stroke=\"#7a2a14\" stroke-width=\"1.2\" fill=\"none\"/></svg>", "naald": "<svg class=\"blad\" viewBox=\"0 0 100 100\" aria-hidden=\"true\"><path d=\"M50 98 L50 8\" stroke=\"#5a4028\" stroke-width=\"3\"/><path d=\"M50 90 L28 80 M50 90 L72 80\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 82 L24 72 M50 82 L76 72\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 74 L22 64 M50 74 L78 64\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 66 L22 56 M50 66 L78 56\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 58 L24 48 M50 58 L76 48\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 50 L26 40 M50 50 L74 40\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 42 L30 32 M50 42 L70 32\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 34 L34 24 M50 34 L66 24\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 26 L38 16 M50 26 L62 16\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 18 L42 8 M50 18 L58 8\" stroke=\"#2f6b4a\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>"}, BL=['eik','ginkgo','esdoorn','naald'];
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function zin(t){t=String(t||'').replace(/\s+/g,' ').trim();var m=t.match(/^.{30,170}?[.!?](\s|$)/);return m?m[0].trim():(t.length<=170?t:'');}
+var W=[],H={},q=new URLSearchParams(location.search);
+$('ad').value=new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
+Promise.all([fetch('../data/wandelingen.json').then(function(r){return r.json();}),fetch('../data/arboretum.json').then(function(r){return r.json();})]).then(function(x){
+  W=x[0];H=x[1].hoofd||{};
+  W.forEach(function(w){var o=document.createElement('option');o.value=w.id;o.textContent=w.titel;$('aw').appendChild(o);});
+  if(q.get('w'))$('aw').value=q.get('w');
+  ['aw','ad','an','aleeg'].forEach(function(i){$(i).addEventListener('input',teken);$(i).addEventListener('change',teken);});
+  teken();
+});
+document.querySelectorAll('[data-blok]').forEach(function(c){c.onchange=function(){$(c.dataset.blok).hidden=!c.checked;};});
+function teken(){
+  var w=W.filter(function(a){return a.id===$('aw').value;})[0]; if(!w)return;
+  $('aterug').href='../wandeling/?w='+w.id;
+  var dat=$('ad').value, km=((w.lengte||0)/1000).toFixed(1).replace('.',',');
+  // weetjes van onderweg
+  var wj=[];w.stops.forEach(function(s){var z=zin(s.weetje)||zin(s.kijk);if(z&&wj.indexOf(z)<0)wj.push({z:z,n:s.nl||s.titel||''});});
+  if(!wj.length)wj=[{z:'Hier staan bossen van vier continenten op een paar honderd meter van elkaar.',n:''}];
+  var n=+$('an').value,h='';
+  for(var i=0;i<n;i++){var x=wj[i%wj.length];
+    h+='<div class="bwijzer"><div class="bwtop">'+SV[BL[i%4]]+'</div><p class="bwkop">Een wereldreis rond bomen</p><p class="bwwand">'+esc(w.titel)+'</p>'+
+      '<p class="bwweet"><span>Wist je dat?</span>'+esc(x.z)+'</p>'+(x.n?'<p class="bwboom">'+esc(x.n)+'</p>':'')+
+      '<p class="bwvoet">Geografisch Arboretum Tervuren<br>'+esc(dat)+'</p></div>';}
+  $('bw').innerHTML='<h2 class="geenprint">Bladwijzers</h2><div class="bwrij">'+h+'</div>';
+  // streken
+  var gez={},str=[];w.stops.forEach(function(s){var g=String(s.g||'').match(/^\d+/);if(g&&H[g[0]]&&!gez[g[0]]){gez[g[0]]=1;str.push(H[g[0]].split(',')[0]);}});
+  var nieuw=Object.keys(gez).filter(function(g){return +g<=20;}).length, oud=str.length-nieuw;
+  var naam=$('aleeg').checked?'<span class="lijn"></span>':'';
+  var c='<div class="certkaart">'+SV.naald+'<p class="ckop">Wereldreizigerscertificaat</p><p class="ctekst">'+naam+'<br>reisde op <b>'+esc(dat)+'</b> te voet langs <b>'+(str.length||'de')+' bossen van de wereld</b>'+(nieuw&&oud?', van de Nieuwe én de Oude Wereld':'')+', zonder paspoort en zonder vliegtuig.</p>'+
+    (str.length?'<p class="cstreken">'+str.slice(0,12).map(esc).join(' · ')+(str.length>12?' …':'')+'</p>':'')+
+    '<p class="cvoet">'+esc(w.titel)+' · '+km+' km · Geografisch Arboretum Tervuren</p></div>';
+  $('cert').innerHTML='<h2 class="geenprint">Certificaten</h2><div class="certrij">'+c+c+c+c+'</div>';
+  var b='<div class="bladkaart"><p class="ckop">Mijn mooiste blad</p><div class="plak">plak hier je blad</div><p class="bkvelden">Boom: <span class="lijn"></span><br>Gevonden op: '+esc(dat)+'<br>Waar: '+esc(w.titel)+'</p><p class="bktip">Tip: leg het blad een week tussen krantenpapier onder een stapel boeken. Dan blijft het plat en houdt het zijn kleur.</p></div>';
+  $('bk').innerHTML='<h2 class="geenprint">Bladkaarten</h2><div class="certrij">'+b+b+b+b+'</div>';
+}
+})();
+</script>
+</main>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../boek/">het boek</a> · <a href="../gidsen/">voor gidsen</a> · <a href="../speurkaart/">speurkaart</a> · <a href="../quiz/">quiz</a> · <a href="../aandenken/">aandenken</a> · <a href="../feedback/">feedback</a> · <a href="../kaart/?opnemen=1#opnemen">tocht opnemen</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
+</body>
+</html>

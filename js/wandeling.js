@@ -61,6 +61,7 @@
       '<a class="knop" href="' + ROOT + 'folder/?w=' + w.id + '">Zakgids om af te drukken</a>' +
       '<a class="knop" href="' + ROOT + 'quiz/?w=' + w.id + '">Quiz na afloop</a>' +
       '<a class="knop" href="' + ROOT + 'feedback/?w=' + w.id + '">Feedbackformulier</a>' +
+      '<a class="knop" href="' + ROOT + 'aandenken/?w=' + w.id + '">Aandenken: bladwijzer en certificaat</a>' +
       (/kinderen|families/.test(w.id) ? '<a class="knop" href="' + ROOT + 'speurkaart/">Speurkaart, bingo en paspoort</a>' : '') +
       (w.stops.some(function (x) { return x.verhaal; }) ? '<button type="button" class="knop" id="gidsknop">Gidsteksten dichtklappen</button>' : '') + '</div>';
     h += '<p class="waar"><b>Start en einde:</b> ' + esc(w.start.naam) + ' (boswachterswoningen, ingang Eikestraat). <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + w.start.lat + ',' + w.start.lon + '">Route ernaartoe</a></p>';
