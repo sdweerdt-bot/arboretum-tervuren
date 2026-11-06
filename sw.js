@@ -5,7 +5,7 @@ var BASE = self.registration.scope;
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(V).then(function (c) {
-    return Promise.all(CORE.map(function (u) { return c.add(new URL(u, BASE).href).catch(function () {}); }));
+    return Promise.all(CORE.map(function (u) { return c.add(new Request(new URL(u, BASE).href, { cache: 'reload' })).catch(function () {}); }));
   }).then(function () { return self.skipWaiting(); }));
 });
 
