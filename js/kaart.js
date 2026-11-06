@@ -284,21 +284,37 @@
   var OPN = 'arb-opnames-v1';
   function opnames() { return lees(OPN, []); }
   function opnameInit() {
+    $('opgeluid').onchange = function () { $('opgeluidopties').hidden = !this.checked; };
+    if (/[?&]opnemen=1/.test(location.search)) { $('opgeluid').checked = true; $('opgeluidopties').hidden = false; setTimeout(function () { $('opnemen').scrollIntoView({ behavior: 'smooth' }); }, 600); }
     $('opstart').onclick = function () {
       if (opname) { stopOpname(); return; }
-      opname = { id: 'w' + Date.now(), naam: 'Wandeling ' + new Date().toLocaleString('nl-BE'), start: new Date().toISOString(), punten: [], stops: [] };
+      if ($('opgeluid').checked) {
+        if (!$('optoest').checked) { $('opstat').textContent = 'Vink eerst aan dat de gids toestemming gaf voor de geluidsopname.'; return; }
+        if (!navigator.mediaDevices || !window.MediaRecorder) { $('opstat').textContent = 'Geluid opnemen kan niet in deze browser. Neem op zonder geluid of gebruik Chrome.'; return; }
+        $('opstart').disabled = true; $('opstat').textContent = 'Microfoon wordt gevraagd…';
+        navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (st) {
+          $('opstart').disabled = false; startOpname(st);
+        }).catch(function () { $('opstart').disabled = false; $('opstat').textContent = 'Geen toegang tot de microfoon. Sta de microfoon toe of neem op zonder geluid.'; });
+        return;
+      }
+      startOpname(null);
+    };
+    function startOpname(stream) {
+      var gids = $('opgids').value.trim();
+      opname = { id: 'w' + Date.now(), naam: (gids ? 'Gidstocht ' + gids + ' ' : 'Wandeling ') + new Date().toLocaleString('nl-BE'), start: new Date().toISOString(), punten: [], stops: [] };
+      if (stream) { opname.audio = { gids: gids, toestemming: new Date().toISOString(), stukken: 0 }; opname.uitschrift = []; startGeluid(stream); if ($('optekst').checked) startUitschrift(); }
       var alle = opnames(); alle.push(opname); schrijf(OPN, alle);
       $('opstart').textContent = 'Stop opname'; $('opstart').classList.add('rood'); $('ophier').disabled = false;
       if (watchId === null) wisselGps();
       if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wakeLock = w; }).catch(function () {});
-      $('opstat').textContent = 'Opname loopt. Laat het scherm aan en deze pagina open.';
+      $('opstat').textContent = 'Opname loopt' + (opname.audio ? ' (met geluid)' : '') + '. Laat het scherm aan en deze pagina open.';
       tekenOpname(opname);
-    };
+    }
     $('ophier').onclick = function () {
       if (!opname) return;
       if (!pos) { $('opstat').textContent = 'Nog geen GPS-positie.'; return; }
       var bij = wieDichtbij(pos.ll, 25).slice(0, 5).map(function (x) { var t = taxon(x.ti); return { n: t.n, nl: t.nl, slug: t.slug, d: Math.round(x.d) }; });
-      opname.stops.push({ lat: +pos.ll[0].toFixed(6), lon: +pos.ll[1].toFixed(6), acc: Math.round(pos.acc), t: new Date().toISOString(), notitie: $('opnotitie').value.trim(), groep: inGroep(pos.ll), bomen: bij });
+      opname.stops.push({ lat: +pos.ll[0].toFixed(6), lon: +pos.ll[1].toFixed(6), acc: Math.round(pos.acc), t: new Date().toISOString(), sec: Math.round((Date.now() - Date.parse(opname.start)) / 1000), notitie: $('opnotitie').value.trim(), groep: inGroep(pos.ll), bomen: bij });
       $('opnotitie').value = ''; bewaarOpname(); tekenOpname(opname);
       $('opstat').textContent = 'Stop ' + opname.stops.length + ' bewaard' + (bij.length ? ' (dichtbij: ' + bij.map(function (b) { return b.n; }).slice(0, 2).join(', ') + ')' : '') + '.';
     };
@@ -309,7 +325,8 @@
       if (b.dataset.op === 'json') download(o.naam.replace(/[^\w-]+/g, '_') + '.json', JSON.stringify(o, null, 1), 'application/json');
       if (b.dataset.op === 'gpx') download(o.naam.replace(/[^\w-]+/g, '_') + '.gpx', gpx(o), 'application/gpx+xml');
       if (b.dataset.op === 'deel') deel(o);
-      if (b.dataset.op === 'wis' && confirm('Deze opname verwijderen?')) { schrijf(OPN, alle.filter(function (x) { return x.id !== o.id; })); lagen.opname.clearLayers(); lijstOpnames(); }
+      if (b.dataset.op === 'pak') pakket(o, b);
+      if (b.dataset.op === 'wis' && confirm('Deze opname verwijderen?')) { wisGeluid(o.id); schrijf(OPN, alle.filter(function (x) { return x.id !== o.id; })); lagen.opname.clearLayers(); lijstOpnames(); }
     });
     lijstOpnames();
   }
@@ -325,7 +342,7 @@
     if (!schrijf(OPN, alle)) $('opstat').textContent = 'Let op: bewaren op dit toestel lukt niet.';
   }
   function stopOpname() {
-    opname.einde = new Date().toISOString(); bewaarOpname();
+    opname.einde = new Date().toISOString(); stopGeluid(); bewaarOpname();
     $('opstat').textContent = 'Opname gestopt: ' + opname.punten.length + ' punten, ' + opname.stops.length + ' stops. Exporteer ze hieronder.';
     opname = null; $('opstart').textContent = 'Start opname'; $('opstart').classList.remove('rood'); $('ophier').disabled = true;
     if (wakeLock) { wakeLock.release().catch(function () {}); wakeLock = null; }
@@ -344,8 +361,8 @@
   function lijstOpnames() {
     var alle = opnames();
     $('oplijst').innerHTML = alle.length ? alle.slice().reverse().map(function (o) {
-      return '<li><b>' + esc(o.naam) + '</b><br><span class="muted">' + fmtM(lengteVan(o)) + ' · ' + o.stops.length + ' stops</span><div class="d-acties">' +
-        ['toon:Toon', 'gpx:GPX', 'json:JSON', 'deel:Delen', 'wis:Verwijder'].map(function (x) { x = x.split(':'); return '<button type="button" data-op="' + x[0] + '" data-id="' + o.id + '">' + x[1] + '</button>'; }).join('') + '</div></li>';
+      return '<li><b>' + esc(o.naam) + '</b><br><span class="muted">' + fmtM(lengteVan(o)) + ' · ' + o.stops.length + ' stops' + (o.audio ? ' · met geluid' + (o.uitschrift && o.uitschrift.length ? ' en uitschrift' : '') : '') + '</span><div class="d-acties">' +
+        (o.audio ? ['pak:Pakket (zip)', 'toon:Toon', 'wis:Verwijder'] : ['toon:Toon', 'gpx:GPX', 'json:JSON', 'deel:Delen', 'wis:Verwijder']).map(function (x) { x = x.split(':'); return '<button type="button" data-op="' + x[0] + '" data-id="' + o.id + '">' + x[1] + '</button>'; }).join('') + '</div></li>';
     }).join('') : '<li class="los">Nog geen opnames op dit toestel.</li>';
   }
   function gpx(o) {
@@ -363,6 +380,100 @@
     if (navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: o.naam }).catch(function () {});
     else download(f.name, JSON.stringify(o, null, 1), 'application/json');
   }
+
+  // ------------------------------------------------------------ geluid, uitschrift en pakket (gidstocht opnemen)
+  var rec = null, recStream = null, herk = null;
+  function idb() {
+    return new Promise(function (ok, nok) {
+      var r = indexedDB.open('arb-geluid', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('stukken'); };
+      r.onsuccess = function () { ok(r.result); }; r.onerror = function () { nok(r.error); };
+    });
+  }
+  function idbZet(k, v) { return idb().then(function (db) { return new Promise(function (ok, nok) { var t = db.transaction('stukken', 'readwrite'); t.objectStore('stukken').put(v, k); t.oncomplete = ok; t.onerror = function () { nok(t.error); }; }); }); }
+  function idbStukken(id) {
+    return idb().then(function (db) { return new Promise(function (ok, nok) {
+      var uit = [], t = db.transaction('stukken'), q = t.objectStore('stukken').openCursor(IDBKeyRange.bound(id + '-', id + '-~'));
+      q.onsuccess = function () { var c = q.result; if (c) { uit.push(c.value); c.continue(); } else ok(uit); }; q.onerror = function () { nok(q.error); };
+    }); });
+  }
+  function wisGeluid(id) { idb().then(function (db) { db.transaction('stukken', 'readwrite').objectStore('stukken').delete(IDBKeyRange.bound(id + '-', id + '-~')); }).catch(function () {}); }
+  function startGeluid(stream) {
+    recStream = stream;
+    var types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'], mime = '';
+    for (var i = 0; i < types.length; i++) if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) { mime = types[i]; break; }
+    rec = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 48000 } : undefined);
+    var o = opname; o.audio.mime = rec.mimeType || mime || 'audio/webm';
+    rec.ondataavailable = function (e) {
+      if (!e.data || !e.data.size) return;
+      var n = o.audio.stukken++; bewaarVan(o);
+      idbZet(o.id + '-' + ('00000' + n).slice(-5), e.data).catch(function () { $('opstat').textContent = 'Let op: het geluid kon niet bewaard worden op dit toestel.'; });
+    };
+    rec.start(10000);
+  }
+  function bewaarVan(o) { var alle = opnames().filter(function (x) { return x.id !== o.id; }); alle.push(o); schrijf(OPN, alle); }
+  function stopGeluid() {
+    if (herk) { var h = herk; herk = null; try { h.stop(); } catch (e) {} }
+    if (rec && rec.state !== 'inactive') { var st = recStream; rec.onstop = function () { st.getTracks().forEach(function (t) { t.stop(); }); }; rec.stop(); }
+    rec = null; recStream = null;
+  }
+  function startUitschrift() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { $('opstat').textContent = 'Live uitschrijven kan niet in deze browser; het geluid wordt wel opgenomen.'; return; }
+    var o = opname; herk = new SR(); herk.lang = 'nl-BE'; herk.continuous = true; herk.interimResults = false;
+    herk.onresult = function (e) {
+      for (var i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) {
+        var t = e.results[i][0].transcript.trim(); if (!t) continue;
+        o.uitschrift.push({ sec: Math.round((Date.now() - Date.parse(o.start)) / 1000), tekst: t }); bewaarVan(o);
+      }
+    };
+    herk.onend = function () { if (herk && opname === o) setTimeout(function () { try { herk.start(); } catch (e) {} }, 300); };
+    herk.onerror = function (e) { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') herk = null; };
+    try { herk.start(); } catch (e) {}
+  }
+  function mmss(s) { s = Math.max(0, s | 0); return (s / 3600 >= 1 ? Math.floor(s / 3600) + ':' : '') + ('0' + Math.floor(s / 60) % 60).slice(-2) + ':' + ('0' + s % 60).slice(-2); }
+  function uitschriftTekst(o) {
+    var r = [o.naam, 'Gids: ' + (o.audio.gids || '-') + ' · toestemming bevestigd op ' + o.audio.toestemming, ''], st = o.stops.slice(), u = (o.uitschrift || []).slice(), alle = [];
+    st.forEach(function (s, i) { alle.push({ sec: s.sec || 0, r: '\n=== STOP ' + (i + 1) + ' [' + mmss(s.sec) + ']' + (s.notitie ? ' ' + s.notitie : '') + (s.bomen && s.bomen.length ? ' | dichtbij: ' + s.bomen.map(function (b) { return b.n; }).join(', ') : '') + ' ===' }); });
+    u.forEach(function (x) { alle.push({ sec: x.sec, r: '[' + mmss(x.sec) + '] ' + x.tekst }); });
+    alle.sort(function (a, b) { return a.sec - b.sec; });
+    return r.concat(alle.map(function (a) { return a.r; })).join('\n') + '\n';
+  }
+  var CRC = (function () { var t = [], c; for (var n = 0; n < 256; n++) { c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(u) { var c = 0xFFFFFFFF; for (var i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(bestanden) { // [{naam, data: Uint8Array}] zonder compressie
+    var delen = [], centraal = [], off = 0, enc = new TextEncoder();
+    bestanden.forEach(function (f) {
+      var nm = enc.encode(f.naam), c = crc32(f.data), h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint32(14, c, true); h.setUint32(18, f.data.length, true); h.setUint32(22, f.data.length, true); h.setUint16(26, nm.length, true);
+      delen.push(h.buffer, nm, f.data);
+      var z = new DataView(new ArrayBuffer(46));
+      z.setUint32(0, 0x02014b50, true); z.setUint16(4, 20, true); z.setUint16(6, 20, true); z.setUint16(8, 0x0800, true); z.setUint32(16, c, true); z.setUint32(20, f.data.length, true); z.setUint32(24, f.data.length, true); z.setUint16(28, nm.length, true); z.setUint32(42, off, true);
+      centraal.push(z.buffer, nm); off += 30 + nm.length + f.data.length;
+    });
+    var grootte = centraal.reduce(function (a, b) { return a + b.byteLength; }, 0), e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, bestanden.length, true); e.setUint16(10, bestanden.length, true); e.setUint32(12, grootte, true); e.setUint32(16, off, true);
+    return new Blob(delen.concat(centraal, [e.buffer]), { type: 'application/zip' });
+  }
+  function pakket(o, knop) {
+    knop.disabled = true; knop.textContent = 'Bezig…';
+    idbStukken(o.id).then(function (stukken) {
+      return new Blob(stukken, { type: o.audio.mime }).arrayBuffer();
+    }).then(function (ab) {
+      var enc = new TextEncoder(), ext = /mp4/.test(o.audio.mime) ? 'm4a' : /ogg/.test(o.audio.mime) ? 'ogg' : 'webm';
+      var naam = o.naam.replace(/[^\w-]+/g, '_');
+      var z = zip([
+        { naam: 'opname.json', data: enc.encode(JSON.stringify(o, null, 1)) },
+        { naam: 'opname.gpx', data: enc.encode(gpx(o)) },
+        { naam: 'uitschrift.txt', data: enc.encode(uitschriftTekst(o)) },
+        { naam: 'geluid.' + ext, data: new Uint8Array(ab) }]);
+      var f = new File([z], naam + '.zip', { type: 'application/zip' });
+      knop.disabled = false; knop.textContent = 'Pakket (zip)';
+      if (navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: o.naam }).catch(function (e) { if (e && e.name !== 'AbortError') dlBlob(f); });
+      else dlBlob(f);
+    }).catch(function () { knop.disabled = false; knop.textContent = 'Pakket (zip)'; $('opstat').textContent = 'Het pakket kon niet gemaakt worden.'; });
+  }
+  function dlBlob(f) { var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
 
   // ------------------------------------------------------------ opstart
   Promise.all([fetch(ROOT + 'data/arboretum.json').then(function (r) { return r.json(); }), fetch(ROOT + 'data/wandelingen.json').then(function (r) { return r.json(); })])

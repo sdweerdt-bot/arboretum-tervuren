@@ -9,7 +9,7 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icoon-192.png">
 <link rel="apple-touch-icon" href="../icoon-192.png">
-<link rel="stylesheet" href="../css/site.css?v=d256d574">
+<link rel="stylesheet" href="../css/site.css?v=771ed7c7">
 <link rel="stylesheet" href="../lib/leaflet-1.9.4/leaflet.css">
 </head>
 <body data-root="../" class="kaartpagina">
@@ -31,12 +31,19 @@
 <p class="muted">Neem je eigen tocht op: je GPS-spoor wordt bewaard op dit toestel. Met <b>Stop hier</b> markeer je een plek, met een notitie; de bomen in de buurt worden automatisch genoteerd. Laat het scherm aan tijdens de opname.</p>
 <div class="rij"><button id="opstart" class="knop hoofd" type="button">Start opname</button><button id="ophier" class="knop" type="button" disabled>Stop hier</button></div>
 <input id="opnotitie" type="text" placeholder="Notitie bij de volgende stop (optioneel)" aria-label="Notitie">
+<fieldset class="opaudio"><label class="vink"><input type="checkbox" id="opgeluid"> Ook de uitleg van de gids opnemen (geluid)</label>
+<div id="opgeluidopties" hidden>
+<label>Naam van de gids <input id="opgids" type="text" autocomplete="off"></label>
+<label class="vink"><input type="checkbox" id="optoest"> De gids gaf toestemming om deze tocht met geluid op te nemen en te verwerken tot een wandeling.</label>
+<label class="vink"><input type="checkbox" id="optekst"> Ook live uitschrijven naar tekst (werkt in Chrome; de spraak wordt daarvoor door Google-spraakherkenning verwerkt)</label>
+<p class="muted">Tip: test eerst thuis een minuutje. Houd de telefoon met de microfoon naar de gids, laat het scherm aan en deze pagina open. Na afloop tik je bij de opname op <b>Pakket</b>: je krijgt één zip met geluid, GPS-spoor, stops en uitschrift. Zet die in je Downloads en vraag Claude om er een wandeling van te maken.</p>
+</div></fieldset>
 <p id="opstat" class="muted"></p><ul id="oplijst"></ul></section>
 <p class="bronnen">Bomen, reeksen, groepen en paden: interactieve kaart van het Geografisch Arboretum Tervuren (<a href="https://www.arboretum-tervuren.be">arboretum-tervuren.be</a>) · achtergrond © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-bijdragers</a></p>
 </main>
 <script type="module" src="../lib/leaflet-1.9.4/leaflet-global.js"></script>
-<script src="../js/kaart.js?v=d256d574"></script>
-<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../boek/">het boek</a> · <a href="../gidsen/">voor gidsen</a> · <a href="../speurkaart/">speurkaart</a> · <a href="../quiz/">quiz</a> · <a href="../feedback/">feedback</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
+<script src="../js/kaart.js?v=771ed7c7"></script>
+<footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../boek/">het boek</a> · <a href="../gidsen/">voor gidsen</a> · <a href="../speurkaart/">speurkaart</a> · <a href="../quiz/">quiz</a> · <a href="../feedback/">feedback</a> · <a href="../kaart/?opnemen=1#opnemen">tocht opnemen</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
 </body>
 </html>

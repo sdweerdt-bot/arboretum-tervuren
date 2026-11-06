@@ -323,3 +323,8 @@ details.gids > summary { cursor: pointer; font-weight: 700; color: var(--kl, #13
 .fbv { border: 1px solid #ddd; border-radius: 8px; margin: 8px 0; }
 .fbv label { display: inline-block; margin: 4px 10px 4px 0; color: #e0a43a; }
 @media print { .qopt { border: 1px solid #999; } .fl .flfoto { max-height: 220px; } }
+/* gidstocht opnemen */
+.opaudio{border:1px solid var(--lijn,#d7dccf);border-radius:10px;padding:.6rem .8rem;margin:.6rem 0}
+.opaudio label{display:block;margin:.35rem 0}
+.opaudio label.vink{display:flex;gap:.5rem;align-items:flex-start}
+.opaudio input[type=text]{width:100%;margin-top:.2rem}
