@@ -34,7 +34,7 @@
   }
   function stopVanMet(ti, s, oud) {   // behoudt gidsteksten, foto's en links
     var n = stopVan(ti, s, oud);
-    ['hoofdstuk', 'verhaal', 'kijk', 'weetje', 'vraag', 'antwoord', 'brug', 'fotos', 'meer'].forEach(function (k) { if (oud && oud[k]) n[k] = oud[k]; });
+    ['hoofdstuk', 'verhaal', 'kijk', 'weetje', 'doe', 'samen', 'vraag', 'antwoord', 'brug', 'fotos', 'meer'].forEach(function (k) { if (oud && oud[k]) n[k] = oud[k]; });
     return n;
   }
   function dichtsteStand(p, max) {
@@ -87,7 +87,7 @@
     $('wkeuze').innerHTML = W.map(function (x, i) { return '<option value="' + i + '">' + esc(x.titel) + (x.verborgen ? ' (verborgen)' : '') + (x.soort === 'officieel' ? ' · lus' : '') + '</option>'; }).join('');
     $('wkeuze').value = cur;
   }
-  var GV = [['hoofdstuk', 'Hoofdstuk (bv. 1823 · Aankomst)', 1], ['verhaal', 'Vertel (lege regel = nieuwe alinea)', 6], ['kijk', 'Kijk en wijs aan', 3], ['weetje', 'Weetje', 2], ['vraag', 'Vraag aan de groep', 1], ['antwoord', 'Antwoord', 1], ['brug', 'Brug naar de volgende stop', 2]];
+  var GV = [['hoofdstuk', 'Hoofdstuk (bv. 1823 · Aankomst)', 1], ['verhaal', 'Vertel (lege regel = nieuwe alinea)', 6], ['kijk', 'Kijk en wijs aan', 3], ['weetje', 'Weetje', 2], ['doe', 'Doe-opdracht (kinderen/families)', 2], ['samen', 'Samen praten (jong en oud)', 2], ['vraag', 'Vraag aan de groep', 1], ['antwoord', 'Antwoord', 1], ['brug', 'Brug naar de volgende stop', 2]];
   function toon() {
     var x = w(); if (!x) return;
     $('f-titel').value = x.titel || ''; $('f-id').textContent = x.id; $('f-kleur').value = x.kleur || '#2E7D32';
