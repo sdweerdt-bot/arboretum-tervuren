@@ -9,6 +9,13 @@
     n = esc(n || ''); if (n === 'onbekend') return n;
     return '<i>' + n.replace(/(\s(?:subsp|var|f|cv)\.\s|\s[x×]\s|\s(?:species)$)/g, function (m) { return '</i>' + m + '<i>'; }) + '</i>';
   }
+  function fotos(s) {
+    if (!s.fotos || !s.fotos.length) return '';
+    return '<div class="sfotos">' + s.fotos.map(function (f) {
+      return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="' + esc(f.bijschrift || s.titel) + '" loading="lazy"></a>' + (f.bijschrift ? '<figcaption>' + esc(f.bijschrift) + '</figcaption>' : '') + '</figure>';
+    }).join('') + '</div>';
+  }
+  window.ARB_FOTOS = fotos;
   function km(m) { return (Math.round(m / 100) / 10).toFixed(1).replace('.', ','); }
   function xy(lat, lon) { return [(lon - P.lon0) * P.kx, (P.lat1 - lat) * P.ky]; }
   function kaartje(w) {
@@ -35,7 +42,7 @@
       var q = '?w=' + w.id + '&amp;s=' + k;
       h += '<li id="stop-' + (k + 1) + '"><h3>' + esc(s.titel) + '</h3><p>' + naam(s.n) + (s.nl && s.nl !== s.titel ? ' · ' + esc(s.nl) : '') +
         ' <span class="muted">· groep ' + esc(s.g || '–') + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + '</span></p>' +
-        (s.tekst ? '<p class="tekst">' + esc(s.tekst) + '</p>' : '') +
+        (s.tekst ? '<p class="tekst">' + esc(s.tekst) + '</p>' : '') + fotos(s) +
         '<p><a href="' + ROOT + 'soort/' + s.slug + '/' + q + '">Plantenfiche</a> · ' + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a> · ' : '') +
         '<a href="' + ROOT + 'kaart/?w=' + w.id + '&amp;ll=' + s.lat + ',' + s.lon + '">op de kaart</a></p></li>';
     });

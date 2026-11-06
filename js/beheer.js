@@ -101,6 +101,12 @@
         '<label>Soort<input class="b-soort" list="soortenlijst" value="' + esc(s.n + (s.nl ? ' – ' + s.nl : '')) + '"></label>' +
         '<label>Standplaats<select class="b-stand">' + opts + '</select></label>' +
         '<label>Uitleg<textarea class="b-tekst" rows="3">' + esc(s.tekst) + '</textarea></label>' +
+        '<div class="bfotos">' + (s.fotos || []).map(function (f, k) {
+          return '<figure class="bfoto"><img src="' + (f.src.indexOf('data:') === 0 ? f.src : ROOT + f.src) + '" alt="">' + (f.src.indexOf('data:') === 0 ? '<span class="bnieuw">nog niet online</span>' : '') +
+            '<input class="b-fbij" data-f="' + k + '" value="' + esc(f.bijschrift || '') + '" placeholder="Bijschrift (optioneel)" aria-label="Bijschrift foto ' + (k + 1) + '">' +
+            '<button type="button" data-a="fweg" data-f="' + k + '" title="foto verwijderen">✕</button></figure>';
+        }).join('') + '</div>' +
+        '<label class="kn bfotoknop">+ Foto toevoegen<input type="file" class="b-foto" accept="image/*" multiple hidden></label>' +
         '<div class="d-acties"><button type="button" data-a="toon">Toon op kaart</button><a class="kn" href="' + ROOT + 'soort/' + s.slug + '/" target="_blank">Fiche</a></div></li>';
     }).join('') || '<li class="los">Nog geen stops. Tik op <b>Stop toevoegen</b> en dan op de kaart bij een boom.</li>';
     tekenKaart(); bewaarConcept();
@@ -116,6 +122,8 @@
     var x = w(), i = +li.dataset.i, s = x.stops[i];
     if (e.target.classList.contains('b-titel')) s.titel = e.target.value;
     if (e.target.classList.contains('b-tekst')) s.tekst = e.target.value;
+    if (e.target.classList.contains('b-fbij')) s.fotos[+e.target.dataset.f].bijschrift = e.target.value;
+    if (e.target.classList.contains('b-foto') && e.type === 'change') { voegFotosToe(x, s, e.target.files); e.target.value = ''; return; }
     if (e.target.classList.contains('b-soort') && e.type === 'change') {
       var ti = NAAM2I[e.target.value.toLowerCase()] !== undefined ? NAAM2I[e.target.value.toLowerCase()] : NAAM2I[e.target.value.split(' – ')[0].toLowerCase()];
       if (ti === undefined) { melding('Soort "' + esc(e.target.value) + '" niet gevonden in het arboretum.', true); return; }
@@ -135,6 +143,7 @@
     if (a === 'op' && i > 0) { var t = x.stops[i - 1]; x.stops[i - 1] = x.stops[i]; x.stops[i] = t; berekenRoute(); toon(); }
     if (a === 'neer' && i < x.stops.length - 1) { t = x.stops[i + 1]; x.stops[i + 1] = x.stops[i]; x.stops[i] = t; berekenRoute(); toon(); }
     if (a === 'weg' && confirm('Stop ' + (i + 1) + ' (' + x.stops[i].titel + ') verwijderen?')) { x.stops.splice(i, 1); berekenRoute(); toon(); }
+    if (a === 'fweg' && confirm('Deze foto weghalen bij de stop?')) { x.stops[i].fotos.splice(+b.dataset.f, 1); toon(); }
     if (a === 'toon') { map.setView([x.stops[i].lat, x.stops[i].lon], 19); $('bkaart').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   }
 
@@ -190,20 +199,65 @@
   }
   function uniekId(b) { var id = b, n = 2; while (W.some(function (x) { return x.id === id; })) id = b + '-' + n++; return id; }
 
+  // ------------------------------------------------------------ foto's
+  function verklein(file) {
+    var max = 1400;
+    var laad = window.createImageBitmap ? createImageBitmap(file, { imageOrientation: 'from-image' }) : new Promise(function (ok, nok) {
+      var im = new Image(); im.onload = function () { ok(im); }; im.onerror = nok; im.src = URL.createObjectURL(file);
+    });
+    return laad.then(function (im) {
+      var f = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+      c.width = Math.round(im.width * f); c.height = Math.round(im.height * f);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      return c.toDataURL('image/jpeg', 0.8);
+    });
+  }
+  function ghHeaders() { return { Authorization: 'Bearer ' + lees('arb-gh-token', ''), Accept: 'application/vnd.github+json' }; }
+  function laadFotoOp(wid, data) {
+    var pad = 'img/wandelingen/' + wid + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) + '.jpg';
+    return fetch('https://api.github.com/repos/' + REPO + '/contents/' + pad, { method: 'PUT', headers: ghHeaders(),
+      body: JSON.stringify({ message: 'Foto bij wandeling ' + wid, content: data.split(',')[1], branch: TAK }) })
+      .then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t.slice(0, 120)); }); return pad; });
+  }
+  function voegFotosToe(x, s, files) {
+    s.fotos = s.fotos || [];
+    var lijst = [].slice.call(files), sleutel = !!lees('arb-gh-token', '');
+    melding('Foto' + (lijst.length > 1 ? "'s" : '') + ' verwerken…');
+    lijst.reduce(function (p, f) {
+      return p.then(function () { return verklein(f); }).then(function (data) {
+        if (!sleutel) { s.fotos.push({ src: data, bijschrift: '' }); return; }
+        return laadFotoOp(x.id, data).then(function (pad) { s.fotos.push({ src: pad, bijschrift: '' }); })
+          .catch(function (e) { s.fotos.push({ src: data, bijschrift: '' }); melding('Opladen lukte nog niet (' + esc(e.message) + '); de foto wordt opgeladen bij Publiceren.', true); });
+      });
+    }, Promise.resolve()).then(function () {
+      toon();
+      melding(sleutel ? 'Foto toegevoegd. Vergeet niet op <b>Publiceren</b> te tikken, dan verschijnt ze bij de stop.' :
+        'Foto toegevoegd aan het concept. Ze wordt opgeladen bij <b>Publiceren</b> (daarvoor is de GitHub-sleutel nodig).');
+    }).catch(function () { melding('Deze foto kon niet gelezen worden.', true); });
+  }
+  function laadOpenstaandeFotosOp() {
+    var taken = [];
+    W.forEach(function (x) { x.stops.forEach(function (s) { (s.fotos || []).forEach(function (f) { if (f.src.indexOf('data:') === 0) taken.push([x, f]); }); }); });
+    return taken.reduce(function (p, t) { return p.then(function () { return laadFotoOp(t[0].id, t[1].src).then(function (pad) { t[1].src = pad; }); }); }, Promise.resolve());
+  }
+
   // ------------------------------------------------------------ bewaren en publiceren
-  function bewaarConcept() { schrijf('arb-beheer-concept', { t: Date.now(), W: W }); }
+  function bewaarConcept() {
+    try { localStorage.setItem('arb-beheer-concept', JSON.stringify({ t: Date.now(), W: W })); }
+    catch (e) { melding('Het concept is te groot om op dit toestel te bewaren (te veel nieuwe foto\'s). Publiceer nu, dan staan ze veilig online.', true); }
+  }
   function utf8b64(s) { return btoa(unescape(encodeURIComponent(s))); }
   function publiceer() {
     leesFormulier();
     var token = lees('arb-gh-token', ''); if (!token) { melding('Vul eerst je GitHub-sleutel in (onderaan, bij "Publiceren instellen").', true); $('gh').open = true; return; }
     var api = 'https://api.github.com/repos/' + REPO + '/contents/' + PAD, h = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
     melding('Publiceren…');
-    fetch(api + '?ref=' + TAK, { headers: h, cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('lezen: ' + r.status); return r.json(); }).then(function (f) {
+    laadOpenstaandeFotosOp().then(function () { return fetch(api + '?ref=' + TAK, { headers: h, cache: 'no-store' }); }).then(function (r) { if (!r.ok) throw new Error('lezen: ' + r.status); return r.json(); }).then(function (f) {
       var inhoud = JSON.stringify(W);
       return fetch(api, { method: 'PUT', headers: h, body: JSON.stringify({ message: 'Wandelingen bijgewerkt via de beheerpagina', content: utf8b64(inhoud), sha: f.sha, branch: TAK }) });
     }).then(function (r) {
       if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t.slice(0, 160)); });
-      melding('Gepubliceerd. Binnen een à twee minuten staat de nieuwe versie online (daarna één keer verversen).');
+      melding('Gepubliceerd. Binnen een à twee minuten staat de nieuwe versie online (daarna één keer verversen).'); toon();
     }).catch(function (e) { melding('Publiceren mislukt: ' + esc(e.message) + '. Controleer je sleutel (rechten: Contents, lezen en schrijven, op deze repository).', true); });
   }
   function download() {

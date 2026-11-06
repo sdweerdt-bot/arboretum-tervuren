@@ -275,7 +275,8 @@
     var afst = pos ? '<span class="groot">' + fmtM(afstand(pos.ll, [s.lat, s.lon])) + ' ' + richting(pos.ll, [s.lat, s.lon]) + '</span>' : '<span class="muted">Zet de GPS aan om de afstand te zien.</span>';
     el.innerHTML = '<p class="vstop">Stop ' + (i + 1) + ' van ' + wand.stops.length + ': <b>' + esc(s.titel) + '</b><br>' + afst + '</p>' +
       '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' +
-      '<p class="tekst">' + esc(s.tekst) + '</p><div class="d-acties"><button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button><a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' + eikKnop(s.eik) + '</div>';
+      '<p class="tekst">' + esc(s.tekst) + '</p>' + (s.fotos && s.fotos.length ? '<div class="sfotos">' + s.fotos.map(function (f) { return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="" loading="lazy"></a>' + (f.bijschrift ? '<figcaption>' + esc(f.bijschrift) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') +
+      '<div class="d-acties"><button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button><a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' + eikKnop(s.eik) + '</div>';
   }
 
   // ------------------------------------------------------------ zelf een wandeling opnemen
