@@ -23,6 +23,7 @@
     if (s.kijk) h += '<div class="gb kijk"><b>Kijk en wijs aan</b>' + alineas(s.kijk) + '</div>';
     if (s.weetje) h += '<div class="gb weetje"><b>Weetje</b>' + alineas(s.weetje) + '</div>';
     if (s.vraag) h += '<div class="gb vraag"><b>Vraag aan de groep</b><p>' + esc(s.vraag) + '</p>' + (s.antwoord ? '<details><summary>Antwoord</summary><p>' + esc(s.antwoord) + '</p></details>' : '') + '</div>';
+    if (s.k1923) h += '<div class="gb k1923"><b>Op de kaart van 1923</b><p>' + esc(s.k1923) + '</p></div>';
     if (s.brug) h += '<div class="gb brug"><b>Brug naar de volgende stop</b><p>' + esc(s.brug) + '</p></div>';
     if (!h) return '';
     return '<details class="gids" open><summary>Gidstekst</summary>' + h + '</details>';

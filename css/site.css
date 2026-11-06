@@ -260,3 +260,5 @@ details.gids > summary { cursor: pointer; font-weight: 700; color: var(--kl, #13
   body { background: #fff; color: #000; }
   .teaser .tfoto { max-height: 300px; }
 }
+.gb.k1923 { border-color: #8d6e63; background: #f6efe3; } .gb.k1923 > b { color: #5d4037; }
+@media (prefers-color-scheme: dark) { .gb.k1923 { background: #2a2420; } .gb.k1923 > b { color: #e8d9b5; } }
