@@ -239,7 +239,7 @@
     L.polyline(wand.route, { color: wand.kleur, weight: 6, opacity: 0.75, interactive: false }).addTo(lagen.wand);
     wand.stops.forEach(function (s, i) {
       L.marker([s.lat, s.lon], { icon: L.divIcon({ className: 'stopnr', html: '<span style="background:' + wand.kleur + '">' + (i + 1) + '</span>', iconSize: [30, 30], iconAnchor: [15, 15] }) })
-        .bindPopup('<b>' + (i + 1) + '. ' + esc(s.titel) + '</b><br>' + naamHtml(s.n) + '<p>' + esc(s.tekst) + '</p><div class="pk"><a href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a> ' + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a>' : '') + '</div>', { maxWidth: 300 })
+        .bindPopup('<b>' + (i + 1) + '. ' + esc(s.titel) + '</b><br>' + naamHtml(s.n) + '<p>' + esc(s.tekst) + '</p><div class="pk">' + (s.slug ? '<a href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a> ' : '') + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a>' : '') + '</div>', { maxWidth: 300 })
         .addTo(lagen.wand);
     });
     L.marker([wand.start.lat, wand.start.lon], { icon: L.divIcon({ className: 'stopnr', html: '<span style="background:#0b4a45;border-radius:6px">S</span>', iconSize: [30, 30], iconAnchor: [15, 15] }) })
@@ -274,10 +274,10 @@
     var s = wand.stops[i];
     var afst = pos ? '<span class="groot">' + fmtM(afstand(pos.ll, [s.lat, s.lon])) + ' ' + richting(pos.ll, [s.lat, s.lon]) + '</span>' : '<span class="muted">Zet de GPS aan om de afstand te zien.</span>';
     el.innerHTML = (s.hoofdstuk ? '<p class="hfst" style="--kl:' + wand.kleur + '">' + esc(s.hoofdstuk) + '</p>' : '') + '<p class="vstop">Stop ' + (i + 1) + ' van ' + wand.stops.length + ': <b>' + esc(s.titel) + '</b><br>' + afst + '</p>' +
-      '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' +
+      (s.n ? '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' : '<p class="muted">' + esc(s.plaats || '') + '</p>') +
       '<p class="tekst">' + esc(s.tekst) + '</p>' + (s.fotos && s.fotos.length ? '<div class="sfotos">' + s.fotos.map(function (f) { return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="" loading="lazy"></a>' + (f.bijschrift ? '<figcaption>' + esc(f.bijschrift) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') +
       (s.weetje ? '<div class="gb weetje"><b>Weetje</b><p>' + esc(s.weetje) + '</p></div>' : '') +
-      '<div class="d-acties">' + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button><a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' + eikKnop(s.eik) + '</div>';
+      '<div class="d-acties">' + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button>' + (s.slug ? '<a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' : '') + eikKnop(s.eik) + '</div>';
   }
 
   // ------------------------------------------------------------ zelf een wandeling opnemen

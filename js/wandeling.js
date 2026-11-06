@@ -63,10 +63,10 @@
     h += '<ol class="stops">';
     w.stops.forEach(function (s, k) {
       var q = '?w=' + w.id + '&amp;s=' + k;
-      h += '<li id="stop-' + (k + 1) + '">' + (s.hoofdstuk ? '<p class="hfst">' + esc(s.hoofdstuk) + '</p>' : '') + '<h3>' + esc(s.titel) + '</h3><p>' + naam(s.n) + (s.nl && s.nl !== s.titel ? ' · ' + esc(s.nl) : '') +
-        ' <span class="muted">· groep ' + esc(s.g || '–') + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + '</span></p>' +
+      h += '<li id="stop-' + (k + 1) + '">' + (s.hoofdstuk ? '<p class="hfst">' + esc(s.hoofdstuk) + '</p>' : '') + '<h3>' + esc(s.titel) + '</h3><p>' + (s.n ? naam(s.n) : '<span class="muted">' + esc(s.plaats || 'plek') + '</span>') + (s.nl && s.nl !== s.titel ? ' · ' + esc(s.nl) : '') +
+        (s.n ? ' <span class="muted">· groep ' + esc(s.g || '–') + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + '</span>' : '') + '</p>' +
         (s.tekst ? '<p class="tekst">' + esc(s.tekst) + '</p>' : '') + fotos(s) + gids(s) + meer(s) +
-        '<p><a href="' + ROOT + 'soort/' + s.slug + '/' + q + '">Plantenfiche</a> · ' + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a> · ' : '') +
+        '<p>' + (s.slug ? '<a href="' + ROOT + 'soort/' + s.slug + '/' + q + '">Plantenfiche</a> · ' : '') + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a> · ' : '') +
         '<a href="' + ROOT + 'kaart/?w=' + w.id + '&amp;ll=' + s.lat + ',' + s.lon + '">op de kaart</a></p></li>';
     });
     h += '</ol>' + (w.afsluiter ? '<div class="gb rood"><b>Afsluiter</b>' + alineas(w.afsluiter) + '</div>' : '') + '<p class="waar">Terug naar het vertrekpunt: ' + esc(w.start.naam) + '.</p>';
