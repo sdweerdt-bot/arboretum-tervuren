@@ -173,3 +173,14 @@ button.link { background: none; border: 0; padding: 0; color: var(--teal2); text
 #oplijst li { padding: 10px 0; border-top: 1px solid var(--line); }
 .legende i.naald { background: #2e6b30; } .legende i.loof { background: #c27a17; }
 .legende i.pad { border-radius: 0; height: 4px; background: #7a5230; border: 0; vertical-align: 3px; }
+
+.terugbalk { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1500; display: flex; gap: 6px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); background: #0b4a45; box-shadow: 0 -4px 14px rgba(0,0,0,.25); }
+.terugbalk a { color: #fff; text-decoration: none; border-radius: 10px; display: flex; align-items: center; }
+.terugbalk .tb-terug { flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; padding: 6px 12px; background: #136b63; font-weight: 700; min-height: 52px; }
+.terugbalk .tb-terug small { font-weight: 400; font-size: 13px; opacity: .9; }
+.terugbalk .tb-nav { justify-content: center; width: 52px; font-size: 30px; background: #136b63; }
+body.met-terug { padding-bottom: 80px; }
+
+ol.stops li { scroll-margin-top: 70px; }
+ol.stops li:target { background: #fff4e0; border-radius: 10px; }
+@media (prefers-color-scheme: dark) { ol.stops li:target { background: #3a2c12; } }

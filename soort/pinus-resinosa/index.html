@@ -27,6 +27,13 @@
 </table>
 <h2>Meer lezen</h2><ul class="herk"><li><a href="https://powo.science.kew.org/results?q=Pinus resinosa">Plants of the World Online (Kew)</a>: naam, verspreiding</li><li><a href="https://www.treesandshrubsonline.org/?s=Pinus resinosa">Trees and Shrubs Online</a>: beschrijving en teelt</li><li><a href="https://nl.wikipedia.org/w/index.php?search=Pinus resinosa">Wikipedia</a></li></ul>
 <p class="bron">Standplaatsen, aantallen, plantjaren en omtrek: interactieve kaart van het Geografisch Arboretum Tervuren; namen in andere talen: soortenlijst van het arboretum.</p></main>
+<div id="terug" class="terugbalk" hidden></div>
+<script>(function(){var p=new URLSearchParams(location.search),w=p.get('w');if(!w)return;var s=+p.get('s')||0,k=p.get('van')==='kaart',R=document.body.dataset.root;
+fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(function(L){var W=L.filter(function(x){return x.id===w;})[0];if(!W)return;
+var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
+el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/'+w+'/#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
+(v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
+el.hidden=false;document.body.classList.add('met-terug');});})();</script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>

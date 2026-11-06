@@ -239,13 +239,16 @@
     L.polyline(wand.route, { color: wand.kleur, weight: 6, opacity: 0.75, interactive: false }).addTo(lagen.wand);
     wand.stops.forEach(function (s, i) {
       L.marker([s.lat, s.lon], { icon: L.divIcon({ className: 'stopnr', html: '<span style="background:' + wand.kleur + '">' + (i + 1) + '</span>', iconSize: [30, 30], iconAnchor: [15, 15] }) })
-        .bindPopup('<b>' + (i + 1) + '. ' + esc(s.titel) + '</b><br>' + naamHtml(s.n) + '<p>' + esc(s.tekst) + '</p><div class="pk"><a href="' + fiche(s.slug) + '">Plantenfiche</a> ' + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a>' : '') + '</div>', { maxWidth: 300 })
+        .bindPopup('<b>' + (i + 1) + '. ' + esc(s.titel) + '</b><br>' + naamHtml(s.n) + '<p>' + esc(s.tekst) + '</p><div class="pk"><a href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a> ' + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a>' : '') + '</div>', { maxWidth: 300 })
         .addTo(lagen.wand);
     });
+    L.marker([wand.start.lat, wand.start.lon], { icon: L.divIcon({ className: 'stopnr', html: '<span style="background:#0b4a45;border-radius:6px">S</span>', iconSize: [30, 30], iconAnchor: [15, 15] }) })
+      .bindPopup('<b>Start en einde</b><br>' + esc(wand.start.naam)).addTo(lagen.wand);
     map.fitBounds(L.latLngBounds(wand.route).pad(0.1));
     $('wandeling').hidden = false;
+    $('woverzicht').href = ROOT + 'wandeling/' + wand.id + '/';
     $('wtitel').textContent = wand.titel;
-    $('wmeta').textContent = wand.stops.length + ' stops · ongeveer ' + fmtM(wand.lengte) + ' · ' + wand.seizoen;
+    $('wmeta').textContent = 'Start en einde: ' + wand.start.naam + ' · ' + wand.stops.length + ' stops · ongeveer ' + fmtM(wand.lengte) + ' · ' + wand.seizoen;
     $('wvorige').onclick = function () { wand.manueel = Math.max(0, volgendeIndex() - 1); wand.gezien = wand.gezien.filter(function (i) { return i < wand.manueel; }); bewaarGezien(); wandelingVolg(); };
     $('wvolgende').onclick = function () { var i = volgendeIndex(); if (wand.gezien.indexOf(i) < 0) wand.gezien.push(i); bewaarGezien(); wandelingVolg(); };
     $('wreset').onclick = function () { wand.gezien = []; bewaarGezien(); wandelingVolg(); };
@@ -262,12 +265,17 @@
     $('wlijst').innerHTML = wand.stops.map(function (s, k) {
       return '<li class="' + (wand.gezien.indexOf(k) >= 0 ? 'gezien' : '') + (k === i ? ' nu' : '') + '"><button type="button" data-ll="' + s.lat + ',' + s.lon + '">' + (k + 1) + '. ' + esc(s.titel) + '</button></li>';
     }).join('');
-    if (i >= wand.stops.length) { el.innerHTML = '<p><b>Einde van de wandeling.</b> Alle ' + wand.stops.length + ' stops bezocht.</p>'; return; }
+    if (i >= wand.stops.length) {
+      var st = [wand.start.lat, wand.start.lon];
+      el.innerHTML = '<p class="vstop"><b>Alle ' + wand.stops.length + ' stops bezocht.</b> Terug naar het vertrekpunt, ' + esc(wand.start.naam) + '<br>' +
+        (pos ? '<span class="groot">' + fmtM(afstand(pos.ll, st)) + ' ' + richting(pos.ll, st) + '</span>' : '') + '</p><div class="d-acties"><button type="button" data-ll="' + st.join(',') + '">Toon vertrekpunt</button></div>';
+      return;
+    }
     var s = wand.stops[i];
     var afst = pos ? '<span class="groot">' + fmtM(afstand(pos.ll, [s.lat, s.lon])) + ' ' + richting(pos.ll, [s.lat, s.lon]) + '</span>' : '<span class="muted">Zet de GPS aan om de afstand te zien.</span>';
     el.innerHTML = '<p class="vstop">Stop ' + (i + 1) + ' van ' + wand.stops.length + ': <b>' + esc(s.titel) + '</b><br>' + afst + '</p>' +
       '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' +
-      '<p class="tekst">' + esc(s.tekst) + '</p><div class="d-acties"><button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button><a class="kn" href="' + fiche(s.slug) + '">Plantenfiche</a>' + eikKnop(s.eik) + '</div>';
+      '<p class="tekst">' + esc(s.tekst) + '</p><div class="d-acties"><button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button><a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' + eikKnop(s.eik) + '</div>';
   }
 
   // ------------------------------------------------------------ zelf een wandeling opnemen
