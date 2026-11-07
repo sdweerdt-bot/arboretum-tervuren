@@ -109,7 +109,7 @@
     });
     var b = xy(w.start.lat, w.start.lon);
     s += '<rect x="' + (b[0] - 26).toFixed(0) + '" y="' + (b[1] - 26).toFixed(0) + '" width="52" height="52" rx="8" fill="#0b4a45" stroke="#fff" stroke-width="5"/><text x="' + b[0].toFixed(0) + '" y="' + (b[1] + 10).toFixed(0) + '" font-size="28" font-weight="700" fill="#fff" text-anchor="middle" font-family="system-ui,sans-serif">S</text></svg>';
-    var leg = '<p class="padlegende"><span><i style="background:' + w.kleur + '"></i>de wandeling</span><span><i class="padgroot"></i>groot pad of dreef</span><span><i class="padklein"></i>klein pad door de zones</span><span><i class="padosm"></i>weg of pad buiten het arboretum</span><span><i class="padtoe" style="border-color:' + w.kleur + '"></i>toegang vanaf Eikestraat 102</span></p>';
+    var leg = '<p class="padlegende"><span><i style="background:' + w.kleur + '"></i>de wandeling</span><span><i class="gras"></i>grasveld (vrij toegankelijk)</span><span><i class="padgroot"></i>groot pad of dreef</span><span><i class="padklein"></i>klein pad door de zones</span><span><i class="padosm"></i>weg of pad buiten het arboretum</span><span><i class="padtoe" style="border-color:' + w.kleur + '"></i>toegang vanaf Eikestraat 102</span></p>';
     return '<div style="position:relative"><img class="plat" src="' + ROOT + 'img/plattegrond.svg" alt="Plattegrond met de route en de 40 geografische zones">' + s + '</div>' + leg + zonesLijst(w);
   }
   function pagina(w, el) {

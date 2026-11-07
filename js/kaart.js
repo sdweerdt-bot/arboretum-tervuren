@@ -117,6 +117,9 @@
     });
     function zonesZicht() { if (map.getZoom() >= 17) { if (!map.hasLayer(lagen.zones)) lagen.zones.addTo(map); } else if (map.hasLayer(lagen.zones)) map.removeLayer(lagen.zones); }
     map.on('zoomend', zonesZicht); zonesZicht();
+    (D.gras || []).forEach(function (g) {
+      L.polygon(g.p, { color: '#9cc46a', weight: 1, fillColor: '#cfe8a9', fillOpacity: 0.75 }).bindPopup('<b>' + esc(g.n || 'Grasveld') + '</b><br>Grasveld of weide: hier mag je vrij wandelen.').addTo(lagen.groepen);
+    });
     D.paden.forEach(function (p) {
       if (p.b) { L.polyline(p.p, { color: '#a89f8c', weight: 8, opacity: 0.9, interactive: false }).addTo(lagen.paden); L.polyline(p.p, { color: '#ffffff', weight: 5, opacity: 1, interactive: false }).addTo(lagen.paden); }
       else L.polyline(p.p, { color: '#6b4423', weight: 2.5, opacity: 0.95, interactive: false }).addTo(lagen.paden);
@@ -212,7 +215,7 @@
       else { var c = L.latLngBounds(D.bounds).getCenter(); melding('Je bent ongeveer ' + fmtM(afstand(pos.ll, [c.lat, c.lng])) + ' van het arboretum.'); }
     }
     if (opname && !handmatig) opnamePunt();
-    dichtbij(); wandelingVolg();
+    dichtbij(); wandelingVolg(); navigatie();
   }
 
   // ------------------------------------------------------------ Dichtbij: per soort de dichtste standplaats
@@ -272,6 +275,37 @@
     wandelingVolg();
   }
   function bewaarGezien() { schrijf('arb-wand-' + wand.id, wand.gezien); }
+  // ------------------------------------------------------------ richtingaanwijzingen bij kruispunten
+  var AFSLAG = { r: ['⬆', 'ga rechtdoor bij het kruispunt'], l: ['⬅', 'sla linksaf'], rr: ['➡', 'sla rechtsaf'], L: ['↙', 'sla scherp linksaf'], R: ['↘', 'sla scherp rechtsaf'], o: ['↩', 'keer om en ga terug langs hetzelfde pad'] };
+  function navVoorbereid() {
+    if (wand.cum) return; wand.cum = [0];
+    for (var i = 1; i < wand.route.length; i++) wand.cum.push(wand.cum[i - 1] + afstand(wand.route[i - 1], wand.route[i]));
+    wand.ri = 0; wand.gemeld = {};
+  }
+  function navigatie() {
+    var el = $('wnav'); if (!el) return;
+    if (!wand || !pos || pos.hand || !wand.afslagen || !wand.afslagen.length) { el.hidden = true; return; }
+    navVoorbereid();
+    var best = -1, bd = 1e9, van = Math.max(0, wand.ri - 15), tot = Math.min(wand.route.length, wand.ri + 250);
+    for (var i = van; i < tot; i++) { var d = afstand(pos.ll, wand.route[i]); if (d < bd) { bd = d; best = i; } }
+    if (bd > 40) { for (i = 0; i < wand.route.length; i++) { d = afstand(pos.ll, wand.route[i]); if (d < bd) { bd = d; best = i; } } }
+    if (bd > 40) { el.hidden = false; el.className = 'wnav weg'; el.innerHTML = '<span class="pijl">⚠</span><span>Je bent ' + fmtM(bd) + ' van de route. Ga terug naar de gekleurde lijn.</span>'; return; }
+    wand.ri = best;
+    var hier = wand.cum[best], a = null;
+    for (i = 0; i < wand.afslagen.length; i++) if (wand.afslagen[i][3] > best) { a = wand.afslagen[i]; break; }
+    if (!a) { el.hidden = true; return; }
+    var rest = Math.max(0, wand.cum[a[3]] - hier - (best + 1 < wand.route.length ? 0 : 0));
+    if (rest > 70) { el.hidden = false; el.className = 'wnav ver'; el.innerHTML = '<span class="pijl">⬆</span><span>Volg het pad nog ' + fmtM(Math.round(rest / 10) * 10) + '</span>'; return; }
+    var t = AFSLAG[a[2]] || AFSLAG.r, m = Math.max(5, Math.round(rest / 5) * 5);
+    el.hidden = false; el.className = 'wnav' + (rest <= 25 ? ' nu' : '');
+    el.innerHTML = '<span class="pijl">' + t[0] + '</span><span>' + (rest <= 8 ? 'Nu: ' : 'Over ' + m + ' m: ') + '<b>' + t[1] + '</b></span>';
+    var sl = a[3];
+    if (rest <= 25 && !wand.gemeld[sl]) {
+      wand.gemeld[sl] = 1;
+      if (navigator.vibrate) navigator.vibrate(a[2] === 'r' ? 80 : [120, 60, 120]);
+      if ($('wspraak') && $('wspraak').checked && window.speechSynthesis) { var u = new SpeechSynthesisUtterance((rest <= 8 ? 'Nu ' : 'Over ' + m + ' meter ') + t[1]); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+    }
+  }
   function volgendeIndex() { for (var i = 0; i < wand.stops.length; i++) if (wand.gezien.indexOf(i) < 0) return i; return wand.stops.length; }
   function wandelingVolg() {
     if (!wand) return;
