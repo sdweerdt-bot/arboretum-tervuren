@@ -255,8 +255,6 @@
     wand.gezien = lees(k, []);
     lagen.wand.clearLayers();
     L.polyline(wand.route, { color: wand.kleur, weight: 7, opacity: 0.8, interactive: false }).addTo(lagen.wand);
-    L.polyline([[wand.start.lat, wand.start.lon], wand.route[0]], { color: wand.kleur, weight: 3, dashArray: '2 7', interactive: false }).addTo(lagen.wand);
-    L.polyline([wand.route[wand.route.length - 1], [wand.start.lat, wand.start.lon]], { color: wand.kleur, weight: 3, dashArray: '2 7', interactive: false }).addTo(lagen.wand);
     wand.stops.forEach(function (s, i) {
       L.marker([s.lat, s.lon], { icon: L.divIcon({ className: 'stopnr', html: '<span style="background:' + wand.kleur + '">' + (i + 1) + '</span>', iconSize: [30, 30], iconAnchor: [15, 15] }) })
         .bindPopup('<b>' + (i + 1) + '. ' + esc(s.titel) + '</b><br>' + naamHtml(s.n) + '<p>' + esc(s.tekst) + '</p><div class="pk">' + (s.slug ? '<a href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a> ' : '') + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a>' : '') + '</div>', { maxWidth: 300 })
