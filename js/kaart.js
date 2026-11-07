@@ -120,6 +120,7 @@
     (D.gras || []).forEach(function (g) {
       L.polygon(g.p, { color: '#9cc46a', weight: 1, fillColor: '#cfe8a9', fillOpacity: 0.75 }).bindPopup('<b>' + esc(g.n || 'Grasveld') + '</b><br>Grasveld of weide: hier mag je vrij wandelen.').addTo(lagen.groepen);
     });
+    L.marker([50.81106, 4.50663], { icon: L.divIcon({ className: 'parkingP', html: 'P', iconSize: [24, 24], iconAnchor: [12, 12] }) }).bindPopup('<b>Parking Eikestraat</b><br>De wandelingen starten en eindigen enkele meters verder, aan de slagboom bij het begin van de beukendreef.').addTo(lagen.groepen);
     D.paden.forEach(function (p) {
       if (p.b) { L.polyline(p.p, { color: '#a89f8c', weight: 8, opacity: 0.9, interactive: false }).addTo(lagen.paden); L.polyline(p.p, { color: '#ffffff', weight: 5, opacity: 1, interactive: false }).addTo(lagen.paden); }
       else L.polyline(p.p, { color: '#6b4423', weight: 2.5, opacity: 0.95, interactive: false }).addTo(lagen.paden);

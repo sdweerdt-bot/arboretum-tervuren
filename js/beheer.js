@@ -3,7 +3,7 @@
   'use strict';
   var ROOT = document.body.dataset.root || '../';
   var REPO = 'sdweerdt-bot/arboretum-tervuren', PAD = 'data/wandelingen.json', TAK = 'main';
-  var START = { naam: 'Eikestraat 102, 3080 Tervuren', lat: 50.8106568, lon: 4.5076615 };
+  var START = { naam: 'Parking Eikestraat (bij Eikestraat 102), 3080 Tervuren', lat: 50.810868, lon: 4.506653 };
   var KLEUREN = ['#2E7D32', '#795548', '#7B1FA2', '#E65100', '#1565C0', '#C62828', '#00695C', '#283593', '#EF6C00', '#8D6E4A', '#C0CA33', '#AD1457'];
   var $ = function (id) { return document.getElementById(id); };
   var D, PG, W = [], cur = 0, map, lagen = {}, kiesModus = false, padIdx = null;
@@ -305,7 +305,7 @@
     $('b-neer').onclick = function () { if (cur < W.length - 1) { var t = W[cur + 1]; W[cur + 1] = W[cur]; W[cur] = t; cur++; lijstWandelingen(); bewaarConcept(); } };
     $('b-stopkaart').onclick = function () { zetKies(!kiesModus); if (kiesModus) $('bkaart').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
     $('b-route').onclick = function () { berekenRoute(); toon(); melding('Route opnieuw berekend langs de paden, in de volgorde van de stops.'); };
-    $('b-opt').onclick = function () { if (confirm('De stops in de kortste volgorde zetten (vanaf Eikestraat 102)?')) { optimaliseer(); toon(); } };
+    $('b-opt').onclick = function () { if (confirm('De stops in de kortste volgorde zetten (vanaf de parking Eikestraat)?')) { optimaliseer(); toon(); } };
     $('b-opname').onchange = function (e) {
       var f = e.target.files[0]; if (!f) return;
       f.text().then(function (t) { importeerOpname(JSON.parse(t)); }).catch(function () { melding('Dit bestand kon niet gelezen worden.', true); });

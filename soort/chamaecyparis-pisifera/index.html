@@ -9,7 +9,7 @@
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="icon" href="../../icoon-192.png">
 <link rel="apple-touch-icon" href="../../icoon-192.png">
-<link rel="stylesheet" href="../../css/site.css?v=12e7d753">
+<link rel="stylesheet" href="../../css/site.css?v=f536f52b">
 
 </head>
 <body data-root="../../" class="">
@@ -65,7 +65,7 @@ fetch(R+'data/wandelingen.json').then(function(r){return r.json();}).then(functi
 var el=document.getElementById('terug'),n=W.stops[s+1],v=W.stops[s-1],q=k?'&van=kaart':'';
 el.innerHTML='<a class="tb-terug" href="'+(k?R+'kaart/?w='+w:R+'wandeling/?w='+w+'#stop-'+(s+1))+'">\u2190 '+W.titel+'<small>terug naar stop '+(s+1)+' van '+W.stops.length+(k?' op de kaart':'')+'</small></a>'+
 (v?'<a class="tb-nav" href="'+R+'soort/'+v.slug+'/?w='+w+'&s='+(s-1)+q+'" aria-label="vorige stop">\u2039</a>':'')+(n?'<a class="tb-nav" href="'+R+'soort/'+n.slug+'/?w='+w+'&s='+(s+1)+q+'" aria-label="volgende stop">\u203a</a>':'');
-el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js?v=12e7d753"></script>
+el.hidden=false;document.body.classList.add('met-terug');});})();</script><script src="../../js/wandeling.js?v=f536f52b"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../../groepen/">groepen</a> · <a href="../../boek/">het boek</a> · <a href="../../tijdlijn/">diepe tijd</a> · <a href="../../gidsen/">voor gidsen</a> · <a href="../../speurkaart/">speurkaart</a> · <a href="../../quiz/">quiz</a> · <a href="../../aandenken/">aandenken</a> · <a href="../../feedback/">feedback</a> · <a href="../../kaart/?opnemen=1#opnemen">tocht opnemen</a> · <a href="../../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../../sw.js').catch(function(){});}</script>
 </body>

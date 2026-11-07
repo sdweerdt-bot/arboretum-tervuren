@@ -9,7 +9,7 @@
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="icon" href="../../icoon-192.png">
 <link rel="apple-touch-icon" href="../../icoon-192.png">
-<link rel="stylesheet" href="../../css/site.css?v=12e7d753">
+<link rel="stylesheet" href="../../css/site.css?v=f536f52b">
 
 </head>
 <body data-root="../../" class="">
@@ -23,7 +23,7 @@
 <p>Wandel in één namiddag rond de wereld: bossen van Amerika, Europa en Azië, aangeplant sinds 1902 op het domein van de Koninklijke Schenking.</p>
 <h2>Wat valt er nu te beleven?</h2><ul><li>De westkustgroepen (1–5) zijn op hun mooist met rijp of sneeuw.</li><li>In het kale bos zie je de vorm van elke boom: ideaal voor schors en silhouetten.</li><li>De ceders en zilversparren blijven groen: zoek de vier cedersoorten.</li><li>Eind winter: de eerste kikkers en het vroege bloeien van de hazelaar en het ijzerhout.</li></ul>
 <h2>Aanbevolen wandelingen</h2><ul class="flw"><li data-w="koninklijke-wandeling"><a href="../../wandeling/?w=koninklijke-wandeling">koninklijke-wandeling</a></li><li data-w="kampioenen"><a href="../../wandeling/?w=kampioenen">kampioenen</a></li><li data-w="ziektes-exoten"><a href="../../wandeling/?w=ziektes-exoten">ziektes-exoten</a></li></ul>
-<table class="tfeit"><tr><th>Wanneer</th><td>______________________</td></tr><tr><th>Vertrek</th><td>Eikestraat 102, 3080 Tervuren (ingang Eikestraat)</td></tr><tr><th>Prijs</th><td>______________________</td></tr><tr><th>Inschrijven</th><td>______________________</td></tr></table>
+<table class="tfeit"><tr><th>Wanneer</th><td>______________________</td></tr><tr><th>Vertrek</th><td>Parking Eikestraat (bij Eikestraat 102), 3080 Tervuren (ingang Eikestraat)</td></tr><tr><th>Prijs</th><td>______________________</td></tr><tr><th>Inschrijven</th><td>______________________</td></tr></table>
 <p class="tlink">Meer info: sdweerdt-bot.github.io/arboretum-tervuren</p>
 </article>
 <script>fetch('../../data/wandelingen.json').then(function(r){return r.json();}).then(function(W){document.querySelectorAll('.flw li').forEach(function(li){var x=W.filter(function(a){return a.id===li.dataset.w;})[0];if(x)li.querySelector('a').textContent=x.titel+' (± '+(Math.round(x.lengte/100)/10).toString().replace('.',',')+' km)';else li.remove();});});</script>
