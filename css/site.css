@@ -386,3 +386,7 @@ main.aand{max-width:none}
 .zonenr{background:rgba(255,255,255,.85);border:1.5px solid #00695c;border-radius:5px;color:#004d40;font:800 11px/16px system-ui,sans-serif;text-align:center;width:22px!important;height:18px!important;margin-left:-11px!important;margin-top:-9px!important}
 .zonenr.oud{border-color:#6d4c41;color:#4e342e}
 @media print{.zonelijst ol{columns:2}}
+.zonepop{position:absolute;z-index:20;width:240px;background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);padding:10px 12px;font-size:14px}
+.zonepop img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:6px}
+.zonepop p{margin:2px 0}.zonepop .zx{position:absolute;top:2px;right:6px;border:0;background:none;font-size:22px;cursor:pointer;color:#555}
+@media print{.zonepop{display:none}}

@@ -66,11 +66,11 @@
     var langs = zonesLangs(w), s = '';
     Object.keys(Z).forEach(function (k) {
       var oud = +k > 20, aan = langs.indexOf(+k) >= 0;
-      Z[k].r.forEach(function (r) { s += '<polygon points="' + r.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="' + (oud ? '#bcaaa4' : '#80cbc4') + '" fill-opacity="' + (aan ? 0.38 : 0.16) + '" stroke="' + (oud ? '#6d4c41' : '#00695c') + '" stroke-width="' + (aan ? 4 : 2) + '" stroke-opacity=".7"/>'; });
+      Z[k].r.forEach(function (r) { s += '<polygon data-zone="' + k + '" style="cursor:pointer;pointer-events:all" points="' + r.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="' + (oud ? '#bcaaa4' : '#80cbc4') + '" fill-opacity="' + (aan ? 0.38 : 0.16) + '" stroke="' + (oud ? '#6d4c41' : '#00695c') + '" stroke-width="' + (aan ? 4 : 2) + '" stroke-opacity=".7"/>'; });
     });
     langs.forEach(function (k) {
       var m = zoneMidden(Z[k]); if (!m) return; var q = xy(m[0], m[1]), kl = k > 20 ? '#4e342e' : '#004d40';
-      s += '<g><rect x="' + (q[0] - 25).toFixed(0) + '" y="' + (q[1] - 20).toFixed(0) + '" width="50" height="38" rx="9" fill="#fff" fill-opacity=".92" stroke="' + kl + '" stroke-width="3.5"/><text x="' + q[0].toFixed(0) + '" y="' + (q[1] + 9).toFixed(0) + '" font-size="26" font-weight="800" text-anchor="middle" fill="' + kl + '" font-family="system-ui,sans-serif">' + k + '</text><title>Zone ' + k + ': ' + esc(Z[k].t) + '</title></g>';
+      s += '<g data-zone="' + k + '" style="cursor:pointer"><rect x="' + (q[0] - 25).toFixed(0) + '" y="' + (q[1] - 20).toFixed(0) + '" width="50" height="38" rx="9" fill="#fff" fill-opacity=".92" stroke="' + kl + '" stroke-width="3.5"/><text x="' + q[0].toFixed(0) + '" y="' + (q[1] + 9).toFixed(0) + '" font-size="26" font-weight="800" text-anchor="middle" fill="' + kl + '" font-family="system-ui,sans-serif">' + k + '</text><title>Zone ' + k + ': ' + esc(Z[k].t) + '</title></g>';
     });
     return s;
   }
@@ -79,10 +79,26 @@
     var langs = zonesLangs(w); if (!langs.length) return '';
     return '<div class="zonelijst"><b>Onderweg wandel je door ' + langs.length + ' zones</b> (in de volgorde van de route):<ol>' + langs.map(function (k) { return '<li value="' + k + '"><a href="' + ROOT + 'groep/' + k + '/">' + esc(Z[k].t) + '</a> <span class="muted">' + (k > 20 ? 'Oude Wereld' : 'Nieuwe Wereld') + '</span></li>'; }).join('') + '</ol><p class="muted">Op de kaart: groen = Nieuwe Wereld (zones 1-20), bruin = Oude Wereld (21-40); de zones langs deze wandeling zijn donkerder en hebben een nummer in een wit kader.</p></div>';
   }
+  function zoneInfo(k) {
+    var z = Z[k], oud = +k > 20;
+    return '<button type="button" class="zx" aria-label="Sluiten">×</button>' + (z.img ? '<img src="' + ROOT + 'img/' + esc(z.img) + '" alt="">' : '') +
+      '<p class="muted">Zone ' + k + ' · ' + (oud ? 'Oude Wereld' : 'Nieuwe Wereld') + '</p><b>' + esc(z.t) + '</b><p><a href="' + ROOT + 'groep/' + k + '/">Over deze zone</a></p>';
+  }
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest ? ev.target.closest('.zonekaart [data-zone]') : null, open = document.querySelector('.zonepop');
+    if (ev.target.closest && ev.target.closest('.zonepop')) { if (ev.target.classList.contains('zx')) open.remove(); return; }
+    if (open) open.remove();
+    if (!t || !Z) return;
+    var k = t.getAttribute('data-zone'), box = t.closest('div'), r = box.getBoundingClientRect();
+    var d = document.createElement('div'); d.className = 'zonepop'; d.innerHTML = zoneInfo(k);
+    var x = ev.clientX - r.left, y = ev.clientY - r.top;
+    d.style.left = Math.max(8, Math.min(x - 120, r.width - 248)) + 'px'; d.style.top = (y > r.height / 2 ? Math.max(8, y - 230) : y + 14) + 'px';
+    box.appendChild(d);
+  });
   window.ARB_ZONE = function (g) { var m = /^(\d+)/.exec(g || ''); return m && Z && Z[m[1]] ? Z[m[1]].t : ''; };
   function kaartje(w) {
     if (!P) return '';
-    var s = '<svg viewBox="' + P.vb + '" style="position:absolute;inset:0;width:100%;height:100%">';
+    var s = '<svg viewBox="' + P.vb + '" style="position:absolute;inset:0;width:100%;height:100%" class="zonekaart">';
     s += zonesSvg(w);
     s += '<polyline points="' + w.route.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="none" stroke="' + w.kleur + '" stroke-width="12" stroke-linejoin="round" opacity=".8"/>';
     w.stops.forEach(function (st, i) {

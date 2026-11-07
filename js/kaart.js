@@ -112,7 +112,7 @@
       var t = (D.hoofd && D.hoofd[h]) || '';
       L.marker(per[h].p, { icon: L.divIcon({ className: 'zonenr' + (+h > 20 ? ' oud' : ''), html: h }), keyboard: false })
         .bindTooltip('<b>Zone ' + h + '</b><br>' + esc(t), { direction: 'top' })
-        .bindPopup('<b>Zone ' + h + '</b><br>' + esc(t) + '<div class="pk"><a href="' + ROOT + 'groep/' + h + '/">Over deze zone</a></div>')
+        .bindPopup((window.ZIMG && ZIMG[h] ? '<img src="' + ROOT + 'img/' + ZIMG[h] + '" alt="" style="width:220px;height:100px;object-fit:cover;border-radius:6px"><br>' : '') + '<span class="muted">Zone ' + h + ' · ' + (+h > 20 ? 'Oude Wereld' : 'Nieuwe Wereld') + '</span><br><b>' + esc(t) + '</b><div class="pk"><a href="' + ROOT + 'groep/' + h + '/">Over deze zone</a></div>')
         .addTo(lagen.zones || (lagen.zones = L.layerGroup()));
     });
     function zonesZicht() { if (map.getZoom() >= 17) { if (!map.hasLayer(lagen.zones)) lagen.zones.addTo(map); } else if (map.hasLayer(lagen.zones)) map.removeLayer(lagen.zones); }
