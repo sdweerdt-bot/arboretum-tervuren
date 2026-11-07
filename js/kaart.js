@@ -103,6 +103,20 @@
         .bindPopup('<b>Groep ' + esc(c) + '</b><br>' + esc(g.n) + (h ? '<div class="pk"><a href="' + ROOT + 'groep/' + h + '/">Over groep ' + h + '</a></div>' : ''))
         .addTo(lagen.groepen);
     });
+    // nummers van de 40 zones, met de geografische streek
+    var per = {};
+    Object.keys(D.groepen).forEach(function (c) { var h = hoofd(c); if (!h) return; D.groepen[c].r.forEach(function (r) {
+      var a = 0, cx = 0, cy = 0; for (var i = 0, j = r.length - 1; i < r.length; j = i++) { var f = r[j][0] * r[i][1] - r[i][0] * r[j][1]; a += f; cx += (r[j][0] + r[i][0]) * f; cy += (r[j][1] + r[i][1]) * f; }
+      if (a && (!per[h] || Math.abs(a) > per[h].a)) per[h] = { a: Math.abs(a), p: [cx / (3 * a), cy / (3 * a)] }; }); });
+    Object.keys(per).forEach(function (h) {
+      var t = (D.hoofd && D.hoofd[h]) || '';
+      L.marker(per[h].p, { icon: L.divIcon({ className: 'zonenr' + (+h > 20 ? ' oud' : ''), html: h }), keyboard: false })
+        .bindTooltip('<b>Zone ' + h + '</b><br>' + esc(t), { direction: 'top' })
+        .bindPopup('<b>Zone ' + h + '</b><br>' + esc(t) + '<div class="pk"><a href="' + ROOT + 'groep/' + h + '/">Over deze zone</a></div>')
+        .addTo(lagen.zones || (lagen.zones = L.layerGroup()));
+    });
+    function zonesZicht() { if (map.getZoom() >= 17) { if (!map.hasLayer(lagen.zones)) lagen.zones.addTo(map); } else if (map.hasLayer(lagen.zones)) map.removeLayer(lagen.zones); }
+    map.on('zoomend', zonesZicht); zonesZicht();
     D.paden.forEach(function (p) {
       L.polyline(p.p, { color: p.b ? '#9e8a6a' : '#7a5230', weight: p.b ? 2 : 3, opacity: 0.8, dashArray: p.b ? '4 4' : null, interactive: false }).addTo(lagen.paden);
     });

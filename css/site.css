@@ -378,3 +378,11 @@ main.aand{max-width:none}
 
 .nr{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#0f7b78;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px;vertical-align:middle}
 .tijdmoment h3{margin:.2rem 0}
+.zonelijst{background:#f4f8f6;border:1px solid #d5e5df;border-radius:8px;padding:10px 14px;margin:10px 0 18px}
+.zonelijst ol{margin:6px 0 4px 0;padding-left:34px;columns:2;column-gap:28px}
+.zonelijst li{margin:2px 0;break-inside:avoid}
+.zonelijst li::marker{font-weight:700;color:#0b4a45}
+@media (max-width:640px){.zonelijst ol{columns:1}}
+.zonenr{background:rgba(255,255,255,.85);border:1.5px solid #00695c;border-radius:5px;color:#004d40;font:800 11px/16px system-ui,sans-serif;text-align:center;width:22px!important;height:18px!important;margin-left:-11px!important;margin-top:-9px!important}
+.zonenr.oud{border-color:#6d4c41;color:#4e342e}
+@media print{.zonelijst ol{columns:2}}

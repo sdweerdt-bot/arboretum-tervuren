@@ -49,9 +49,41 @@
   window.ARB_TIJDBALK = tijdbalk;
   function km(m) { return (Math.round(m / 100) / 10).toFixed(1).replace('.', ','); }
   function xy(lat, lon) { return [(lon - P.lon0) * P.kx, (P.lat1 - lat) * P.ky]; }
+  // ------------------------------------------------------------ de 40 geografische zones
+  var Z = window.ZONES || null;
+  function inRing(p, r) { var c = false; for (var i = 0, j = r.length - 1; i < r.length; j = i++) { if (((r[i][0] > p[0]) !== (r[j][0] > p[0])) && (p[1] < (r[j][1] - r[i][1]) * (p[0] - r[i][0]) / (r[j][0] - r[i][0]) + r[i][1])) c = !c; } return c; }
+  function zoneVan(lat, lon) { if (!Z) return null; for (var k in Z) { if (Z[k].r.some(function (r) { return inRing([lat, lon], r); })) return +k; } return null; }
+  function zoneMidden(z) { var best = null, opp = -1; z.r.forEach(function (r) { var a = 0, cx = 0, cy = 0; for (var i = 0, j = r.length - 1; i < r.length; j = i++) { var f = r[j][0] * r[i][1] - r[i][0] * r[j][1]; a += f; cx += (r[j][0] + r[i][0]) * f; cy += (r[j][1] + r[i][1]) * f; } if (Math.abs(a) > opp && a) { opp = Math.abs(a); best = [cx / (3 * a), cy / (3 * a)]; } }); return best; }
+  function zonesLangs(w) {
+    var gez = {}, volg = [];
+    function voeg(z) { if (z && !gez[z]) { gez[z] = 1; volg.push(z); } }
+    w.route.forEach(function (p, i) { if (i % 2 === 0) voeg(zoneVan(p[0], p[1])); });
+    w.stops.forEach(function (s) { var m = /^(\d+)/.exec(s.g || ''); voeg(m ? +m[1] : zoneVan(s.lat, s.lon)); });
+    return volg;
+  }
+  function zonesSvg(w) {
+    if (!Z) return '';
+    var langs = zonesLangs(w), s = '';
+    Object.keys(Z).forEach(function (k) {
+      var oud = +k > 20, aan = langs.indexOf(+k) >= 0;
+      Z[k].r.forEach(function (r) { s += '<polygon points="' + r.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="' + (oud ? '#bcaaa4' : '#80cbc4') + '" fill-opacity="' + (aan ? 0.38 : 0.16) + '" stroke="' + (oud ? '#6d4c41' : '#00695c') + '" stroke-width="' + (aan ? 4 : 2) + '" stroke-opacity=".7"/>'; });
+    });
+    langs.forEach(function (k) {
+      var m = zoneMidden(Z[k]); if (!m) return; var q = xy(m[0], m[1]), kl = k > 20 ? '#4e342e' : '#004d40';
+      s += '<g><rect x="' + (q[0] - 25).toFixed(0) + '" y="' + (q[1] - 20).toFixed(0) + '" width="50" height="38" rx="9" fill="#fff" fill-opacity=".92" stroke="' + kl + '" stroke-width="3.5"/><text x="' + q[0].toFixed(0) + '" y="' + (q[1] + 9).toFixed(0) + '" font-size="26" font-weight="800" text-anchor="middle" fill="' + kl + '" font-family="system-ui,sans-serif">' + k + '</text><title>Zone ' + k + ': ' + esc(Z[k].t) + '</title></g>';
+    });
+    return s;
+  }
+  function zonesLijst(w) {
+    if (!Z) return '';
+    var langs = zonesLangs(w); if (!langs.length) return '';
+    return '<div class="zonelijst"><b>Onderweg wandel je door ' + langs.length + ' zones</b> (in de volgorde van de route):<ol>' + langs.map(function (k) { return '<li value="' + k + '"><a href="' + ROOT + 'groep/' + k + '/">' + esc(Z[k].t) + '</a> <span class="muted">' + (k > 20 ? 'Oude Wereld' : 'Nieuwe Wereld') + '</span></li>'; }).join('') + '</ol><p class="muted">Op de kaart: groen = Nieuwe Wereld (zones 1-20), bruin = Oude Wereld (21-40); de zones langs deze wandeling zijn donkerder en hebben een nummer in een wit kader.</p></div>';
+  }
+  window.ARB_ZONE = function (g) { var m = /^(\d+)/.exec(g || ''); return m && Z && Z[m[1]] ? Z[m[1]].t : ''; };
   function kaartje(w) {
     if (!P) return '';
     var s = '<svg viewBox="' + P.vb + '" style="position:absolute;inset:0;width:100%;height:100%">';
+    s += zonesSvg(w);
     s += '<polyline points="' + w.route.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="none" stroke="' + w.kleur + '" stroke-width="12" stroke-linejoin="round" opacity=".8"/>';
     w.stops.forEach(function (st, i) {
       var q = xy(st.lat, st.lon);
@@ -59,7 +91,7 @@
     });
     var b = xy(w.start.lat, w.start.lon);
     s += '<rect x="' + (b[0] - 26).toFixed(0) + '" y="' + (b[1] - 26).toFixed(0) + '" width="52" height="52" rx="8" fill="#0b4a45" stroke="#fff" stroke-width="5"/><text x="' + b[0].toFixed(0) + '" y="' + (b[1] + 10).toFixed(0) + '" font-size="28" font-weight="700" fill="#fff" text-anchor="middle" font-family="system-ui,sans-serif">S</text></svg>';
-    return '<div style="position:relative"><img class="plat" src="' + ROOT + 'img/plattegrond.svg" alt="Plattegrond met de route">' + s + '</div>';
+    return '<div style="position:relative"><img class="plat" src="' + ROOT + 'img/plattegrond.svg" alt="Plattegrond met de route en de 40 geografische zones">' + s + '</div>' + zonesLijst(w);
   }
   function pagina(w, el) {
     document.title = w.titel + ' | Arboretum Tervuren';
@@ -83,7 +115,7 @@
     w.stops.forEach(function (s, k) {
       var q = '?w=' + w.id + '&amp;s=' + k;
       h += '<li id="stop-' + (k + 1) + '">' + (s.hoofdstuk ? '<p class="hfst">' + esc(s.hoofdstuk) + '</p>' : '') + '<h3>' + esc(s.titel) + '</h3><p>' + (s.n ? naam(s.n) : '<span class="muted">' + esc(s.plaats || 'plek') + '</span>') + (s.nl && s.nl !== s.titel ? ' · ' + esc(s.nl) : '') +
-        (s.n ? ' <span class="muted">· groep ' + esc(s.g || '–') + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + '</span>' : '') + '</p>' +
+        (s.n ? ' <span class="muted">· groep ' + esc(s.g || '–') + (window.ARB_ZONE(s.g) ? ' (' + esc(window.ARB_ZONE(s.g)) + ')' : '') + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + '</span>' : '') + '</p>' +
         (s.tekst ? '<p class="tekst">' + esc(s.tekst) + '</p>' : '') + fotos(s) + gids(s) + meer(s) +
         '<p>' + (s.slug ? '<a href="' + ROOT + 'soort/' + s.slug + '/' + q + '">Plantenfiche</a> · ' : '') + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a> · ' : '') +
         '<a href="' + ROOT + 'kaart/?w=' + w.id + '&amp;ll=' + s.lat + ',' + s.lon + '">op de kaart</a></p></li>';
