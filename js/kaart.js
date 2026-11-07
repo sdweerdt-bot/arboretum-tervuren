@@ -118,7 +118,8 @@
     function zonesZicht() { if (map.getZoom() >= 17) { if (!map.hasLayer(lagen.zones)) lagen.zones.addTo(map); } else if (map.hasLayer(lagen.zones)) map.removeLayer(lagen.zones); }
     map.on('zoomend', zonesZicht); zonesZicht();
     D.paden.forEach(function (p) {
-      L.polyline(p.p, { color: p.b ? '#9e8a6a' : '#7a5230', weight: p.b ? 2 : 3, opacity: 0.8, dashArray: p.b ? '4 4' : null, interactive: false }).addTo(lagen.paden);
+      if (p.b) { L.polyline(p.p, { color: '#a89f8c', weight: 8, opacity: 0.9, interactive: false }).addTo(lagen.paden); L.polyline(p.p, { color: '#ffffff', weight: 5, opacity: 1, interactive: false }).addTo(lagen.paden); }
+      else L.polyline(p.p, { color: '#6b4423', weight: 2.5, opacity: 0.95, interactive: false }).addTo(lagen.paden);
     });
     D.reeksen.forEach(function (r, i) {
       var t = D.taxa[r[0]], dy = r[5] / (RAD * R), dx = r[4] / (RAD * R * Math.cos(r[2] * RAD));
@@ -250,7 +251,9 @@
     var k = 'arb-wand-' + id;
     wand.gezien = lees(k, []);
     lagen.wand.clearLayers();
-    L.polyline(wand.route, { color: wand.kleur, weight: 6, opacity: 0.75, interactive: false }).addTo(lagen.wand);
+    L.polyline(wand.route, { color: wand.kleur, weight: 7, opacity: 0.8, interactive: false }).addTo(lagen.wand);
+    L.polyline([[wand.start.lat, wand.start.lon], wand.route[0]], { color: wand.kleur, weight: 3, dashArray: '2 7', interactive: false }).addTo(lagen.wand);
+    L.polyline([wand.route[wand.route.length - 1], [wand.start.lat, wand.start.lon]], { color: wand.kleur, weight: 3, dashArray: '2 7', interactive: false }).addTo(lagen.wand);
     wand.stops.forEach(function (s, i) {
       L.marker([s.lat, s.lon], { icon: L.divIcon({ className: 'stopnr', html: '<span style="background:' + wand.kleur + '">' + (i + 1) + '</span>', iconSize: [30, 30], iconAnchor: [15, 15] }) })
         .bindPopup('<b>' + (i + 1) + '. ' + esc(s.titel) + '</b><br>' + naamHtml(s.n) + '<p>' + esc(s.tekst) + '</p><div class="pk">' + (s.slug ? '<a href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a> ' : '') + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a>' : '') + '</div>', { maxWidth: 300 })

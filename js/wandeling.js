@@ -100,14 +100,17 @@
     if (!P) return '';
     var s = '<svg viewBox="' + P.vb + '" style="position:absolute;inset:0;width:100%;height:100%" class="zonekaart">';
     s += zonesSvg(w);
-    s += '<polyline points="' + w.route.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="none" stroke="' + w.kleur + '" stroke-width="12" stroke-linejoin="round" opacity=".8"/>';
+    s += '<polyline points="' + w.route.map(function (p) { var q = xy(p[0], p[1]); return q[0].toFixed(0) + ',' + q[1].toFixed(0); }).join(' ') + '" fill="none" stroke="' + w.kleur + '" stroke-width="11" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>';
+    var b0 = xy(w.start.lat, w.start.lon), r0 = xy(w.route[0][0], w.route[0][1]), r1 = xy(w.route[w.route.length - 1][0], w.route[w.route.length - 1][1]);
+    s += '<path d="M' + b0[0].toFixed(0) + ' ' + b0[1].toFixed(0) + ' L' + r0[0].toFixed(0) + ' ' + r0[1].toFixed(0) + ' M' + r1[0].toFixed(0) + ' ' + r1[1].toFixed(0) + ' L' + b0[0].toFixed(0) + ' ' + b0[1].toFixed(0) + '" stroke="' + w.kleur + '" stroke-width="5" stroke-dasharray="4 10" stroke-linecap="round" fill="none"/>';
     w.stops.forEach(function (st, i) {
       var q = xy(st.lat, st.lon);
       s += '<circle cx="' + q[0].toFixed(0) + '" cy="' + q[1].toFixed(0) + '" r="24" fill="' + w.kleur + '" stroke="#fff" stroke-width="5"/><text x="' + q[0].toFixed(0) + '" y="' + (q[1] + 9).toFixed(0) + '" font-size="26" font-weight="700" fill="#fff" text-anchor="middle" font-family="system-ui,sans-serif">' + (i + 1) + '</text>';
     });
     var b = xy(w.start.lat, w.start.lon);
     s += '<rect x="' + (b[0] - 26).toFixed(0) + '" y="' + (b[1] - 26).toFixed(0) + '" width="52" height="52" rx="8" fill="#0b4a45" stroke="#fff" stroke-width="5"/><text x="' + b[0].toFixed(0) + '" y="' + (b[1] + 10).toFixed(0) + '" font-size="28" font-weight="700" fill="#fff" text-anchor="middle" font-family="system-ui,sans-serif">S</text></svg>';
-    return '<div style="position:relative"><img class="plat" src="' + ROOT + 'img/plattegrond.svg" alt="Plattegrond met de route en de 40 geografische zones">' + s + '</div>' + zonesLijst(w);
+    var leg = '<p class="padlegende"><span><i style="background:' + w.kleur + '"></i>de wandeling</span><span><i class="padgroot"></i>groot pad of dreef</span><span><i class="padklein"></i>klein pad door de zones</span><span><i class="padosm"></i>weg of pad buiten het arboretum</span><span><i class="padtoe" style="border-color:' + w.kleur + '"></i>toegang vanaf Eikestraat 102</span></p>';
+    return '<div style="position:relative"><img class="plat" src="' + ROOT + 'img/plattegrond.svg" alt="Plattegrond met de route en de 40 geografische zones">' + s + '</div>' + leg + zonesLijst(w);
   }
   function pagina(w, el) {
     document.title = w.titel + ' | Arboretum Tervuren';
