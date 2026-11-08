@@ -298,7 +298,9 @@
         var x = DOEL.filter(function (y) { return y.id === a.w; })[0]; if (!x) return;
         var s = x.stops[a.k]; if (!(s && (s.n || '') === a.n && s.titel === a.t)) s = x.stops.filter(function (y) { return (y.n || '') === a.n && y.titel === a.t; })[0];
         if (!s) return;
-        (s.fotos = s.fotos || []).push({ src: a.data, bijschrift: a.b || '', bron: 'Eigen foto' + (a.d ? ', ' + a.d : '') }); ok++;
+        var foto = { src: a.data, bijschrift: a.b || '', bron: 'Eigen foto' + (a.d ? ', ' + a.d : '') };
+        (s.fotos = s.fotos || []).push(foto); ok++;
+        DOEL.forEach(function (y) { if (y.variant_van === a.w) { var s2 = y.stops.filter(function (z) { return (z.n || '') === a.n && z.titel === a.t; })[0]; if (s2) (s2.fotos = s2.fotos || []).push(foto); } });
       });
       try { localStorage.setItem('arb-beheer-concept', JSON.stringify({ t: Date.now(), W: DOEL })); localStorage.removeItem('arb-fotowachtrij'); } catch (e) {}
       if (!c) { c = { t: Date.now(), W: DOEL }; }

@@ -295,7 +295,10 @@
         return inh.then(function (t) {
           var W = JSON.parse(t), s = zoekStop(W, item.w, item.k, item.n, item.t);
           if (!s) throw new Error('stop niet gevonden');
-          (s.fotos = s.fotos || []).push({ src: pad, bijschrift: item.b || '', bron: 'Eigen foto' + (item.d ? ', ' + item.d : '') });
+          var foto = { src: pad, bijschrift: item.b || '', bron: 'Eigen foto' + (item.d ? ', ' + item.d : '') };
+          (s.fotos = s.fotos || []).push(foto);
+          // ook in de korte versie van deze wandeling, als die er is
+          W.forEach(function (x) { if (x.variant_van === item.w) { var s2 = zoekStop(W, x.id, -1, item.n, item.t); if (s2) (s2.fotos = s2.fotos || []).push(foto); } });
           return fetch(api + PAD, { method: 'PUT', headers: h, body: JSON.stringify({ message: 'Eigen foto bij ' + item.w + ', stop ' + (item.k + 1), content: utf8b64(JSON.stringify(W)), sha: meta.sha, branch: TAK }) });
         });
       }).then(function (r) { if (!r.ok) throw new Error('bewaren: ' + r.status); return pad; });
@@ -303,12 +306,12 @@
   function wachtrij() { return lees('arb-fotowachtrij', []); }
   function zetWachtrij(q) { localStorage.setItem('arb-fotowachtrij', JSON.stringify(q)); }
   window.ARB_FOTONEEM = function (el, w) {
-    var q = wachtrij().filter(function (a) { return a.w === w.id; });
+    var q = wachtrij().filter(function (a) { return a.w === (w.variant_van || w.id); });
     if (q.length) {
       var p = document.createElement('p'); p.className = 'fotowacht';
       p.innerHTML = '📷 ' + q.length + ' eigen foto' + (q.length > 1 ? "'s" : '') + ' van deze wandeling wacht' + (q.length > 1 ? 'en' : '') + ' op dit toestel om opgeladen te worden. <a href="' + ROOT + 'beheer/">Open de beheerpagina</a> en tik op Publiceren.';
       var st = el.querySelector('.stops'); if (st) st.parentNode.insertBefore(p, st);
-      q.forEach(function (a) { var fs = document.getElementById('fs-' + a.k); if (fs) fs.innerHTML = '<img class="fotomini" src="' + a.data + '" alt=""> wacht op opladen'; });
+      q.forEach(function (a) { var kk = a.k >= 0 ? a.k : w.stops.findIndex(function (x) { return (x.n || '') === a.n && x.titel === a.t; }); var fs = document.getElementById('fs-' + kk); if (fs) fs.innerHTML = '<img class="fotomini" src="' + a.data + '" alt=""> wacht op opladen'; });
     }
     el.addEventListener('change', function (e) {
       var inp = e.target; if (!inp.dataset || inp.dataset.fotostop === undefined || !inp.files || !inp.files[0]) return;
@@ -318,7 +321,7 @@
       verklein(file).then(function (data) {
         var b = prompt('Korte beschrijving bij de foto (bv. "blad", "schors", "vrucht"). Mag leeg blijven.\nTip: geen herkenbare personen op de foto.', '');
         if (b === null) { fs.textContent = ''; return; }
-        var item = { w: w.id, k: k, n: s.n || '', t: s.titel, b: b.trim(), d: new Date().toLocaleDateString('nl-BE'), data: data };
+        var item = { w: w.variant_van || w.id, k: w.variant_van ? -1 : k, n: s.n || '', t: s.titel, b: b.trim(), d: new Date().toLocaleDateString('nl-BE'), data: data };
         fs.innerHTML = '<img class="fotomini" src="' + data + '" alt=""> ';
         var token = lees('arb-gh-token', '');
         if (token) {
