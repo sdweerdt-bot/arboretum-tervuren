@@ -12,7 +12,8 @@
   function fotos(s) {
     if (!s.fotos || !s.fotos.length) return '';
     return '<div class="sfotos">' + s.fotos.map(function (f) {
-      return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="' + esc(f.bijschrift || s.titel) + '" loading="lazy"></a>' + (f.bijschrift || f.bron ? '<figcaption>' + esc(f.bijschrift || '') + (f.bron ? ' <a class="fbron" href="' + esc(f.bron) + '" target="_blank" rel="noopener">bron</a>' : '') + '</figcaption>' : '') + '</figure>';
+      var u = /^https?:/.test(f.src) ? f.src : ROOT + f.src, b = f.bron || '';
+      return '<figure><a href="' + esc(u) + '" target="_blank"><img src="' + esc(u) + '" alt="' + esc(f.bijschrift || s.titel) + '" loading="lazy"></a>' + (f.bijschrift || b ? '<figcaption>' + esc(f.bijschrift || '') + (/^https?:/.test(b) ? ' <a class="fbron" href="' + esc(b) + '" target="_blank" rel="noopener">bron</a>' : (b ? ' <span class="fbron">' + esc(b) + '</span>' : '')) + '</figcaption>' : '') + '</figure>';
     }).join('') + '</div>';
   }
   window.ARB_FOTOS = fotos;
@@ -22,7 +23,7 @@
     if (s.verhaal) h += '<div class="gb vertel"><b>Vertel</b>' + alineas(s.verhaal) + '</div>';
     if (s.kijk) h += '<div class="gb kijk"><b>Kijk en wijs aan</b>' + alineas(s.kijk) + '</div>';
     if (s.weetje) h += '<div class="gb weetje"><b>Weetje</b>' + alineas(s.weetje) + '</div>';
-    if (s.geo) h += '<div class="gb geo"><b>Diepe tijd</b>' + tijdbalk(s.geo.ma) + (s.geo.moment ? '<p class="muted"><span class="nr">' + s.geo.moment + '</span>Moment ' + s.geo.moment + ': ' + esc(s.geo.momenttitel) + '</p>' : '') + '<p>' + esc(s.geo.tekst) + '</p><p class="muted"><a href="' + ROOT + 'tijdlijn/">Alle boomgeslachten op de geologische tijdschaal</a></p></div>';
+    if (s.geo) h += '<details class="gb geo"><summary><b>Diepe tijd</b> <span class="muted">· hoe oud is dit geslacht? (± ' + s.geo.ma + ' miljoen jaar)</span></summary>' + tijdbalk(s.geo.ma) + (s.geo.moment ? '<p class="muted">Moment ' + s.geo.moment + ' op de tijdlijn: ' + esc(s.geo.momenttitel) + '</p>' : '') + '<p>' + esc(s.geo.tekst) + '</p><p class="muted"><a href="' + ROOT + 'tijdlijn/">Alle boomgeslachten op de geologische tijdschaal</a></p></details>';
     if (s.doe) h += '<div class="gb doe"><b>Doe-opdracht</b>' + alineas(s.doe) + '</div>';
     if (s.samen) h += '<div class="gb samen"><b>Samen praten (jong en oud)</b>' + alineas(s.samen) + '</div>';
     if (s.vraag) h += '<div class="gb vraag"><b>Vraag aan de groep</b><p>' + esc(s.vraag) + '</p>' + (s.antwoord ? '<details><summary>Antwoord</summary><p>' + esc(s.antwoord) + '</p></details>' : '') + '</div>';
