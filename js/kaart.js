@@ -63,6 +63,7 @@
     tekenBasis();
     $('waar').addEventListener('click', wisselGps);
     if ($('boomplusknop')) $('boomplusknop').addEventListener('click', boomPlus);
+    draaiInit();
     if ($('bankplusknop')) $('bankplusknop').addEventListener('click', bankPlus);
     document.querySelectorAll('.straal button').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -207,11 +208,13 @@
   function nieuwePos(p, handmatig) {
     pos = { ll: [p.coords.latitude, p.coords.longitude], acc: p.coords.accuracy || 0, t: Date.now(), hand: !!handmatig };
     if (!handmatig) $('waar').textContent = '± ' + Math.round(pos.acc) + ' m';
+    if (!handmatig) volgRichting(p);
     if (!posDot) {
       posCirkel = L.circle(pos.ll, { radius: pos.acc, color: '#1a73e8', weight: 1, fillColor: '#1a73e8', fillOpacity: 0.12, interactive: false }).addTo(map);
-      posDot = L.circleMarker(pos.ll, { radius: 9, color: '#fff', weight: 3, fillColor: '#1a73e8', fillOpacity: 1, interactive: false }).addTo(map);
+      posDot = L.marker(pos.ll, { icon: L.divIcon({ className: 'posicoon', html: '<div class="pospijl" id="pospijl"><svg viewBox="0 0 40 40" width="40" height="40"><path class="pijlkop" d="M20 2 L29 22 L20 17 L11 22 Z" fill="#1a73e8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="20" cy="22" r="8" fill="#1a73e8" stroke="#fff" stroke-width="3"/></svg></div>', iconSize: [40, 40], iconAnchor: [20, 22] }), interactive: false, keyboard: false, zIndexOffset: 1000 }).addTo(map);
     } else { posDot.setLatLng(pos.ll); posCirkel.setLatLng(pos.ll).setRadius(pos.acc); }
-    posDot.bringToFront();
+    toonRichting();
+    if (draai.aan) map.setView(pos.ll, map.getZoom(), { animate: false });
     if (eersteFix && !handmatig) {
       eersteFix = false;
       var b = L.latLngBounds(D.bounds).pad(0.2);
@@ -604,6 +607,66 @@
     }).catch(function () { knop.disabled = false; knop.textContent = 'Pakket (zip)'; $('opstat').textContent = 'Het pakket kon niet gemaakt worden.'; });
   }
   function dlBlob(f) { var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+
+  // ------------------------------------------------------------ looprichting: pijl bij je positie en kaart die meedraait
+  // Richting: tijdens het wandelen de bewegingsrichting (GPS-koers of de laatste meters), stilstaand het kompas van de gsm (als dat er is).
+  var draai = { aan: false, hoek: 0, koers: null, koersT: 0, kompas: null, vorige: null };
+  function hoekTussen(a, b) { var y = Math.sin((b[1] - a[1]) * RAD) * Math.cos(b[0] * RAD), x = Math.cos(a[0] * RAD) * Math.sin(b[0] * RAD) - Math.sin(a[0] * RAD) * Math.cos(b[0] * RAD) * Math.cos((b[1] - a[1]) * RAD); return (Math.atan2(y, x) / RAD + 360) % 360; }
+  function volgRichting(p) {
+    var ll = [p.coords.latitude, p.coords.longitude];
+    if (p.coords.heading != null && !isNaN(p.coords.heading) && (p.coords.speed || 0) > 0.6) { draai.koers = p.coords.heading; draai.koersT = Date.now(); }
+    else if (draai.vorige && afstand(draai.vorige, ll) > 6 && afstand(draai.vorige, ll) > (p.coords.accuracy || 10) * 0.6) { draai.koers = hoekTussen(draai.vorige, ll); draai.koersT = Date.now(); draai.vorige = ll; }
+    if (!draai.vorige || afstand(draai.vorige, ll) > 25) draai.vorige = ll;
+  }
+  function looprichting() {
+    if (draai.koers != null && Date.now() - draai.koersT < 15000) return draai.koers;
+    if (draai.kompas != null) return draai.kompas;
+    return draai.koers;
+  }
+  function kompasEvent(e) {
+    var h = e.webkitCompassHeading != null ? e.webkitCompassHeading : (e.absolute && e.alpha != null ? 360 - e.alpha : null);
+    if (h == null) return;
+    var so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+    draai.kompas = (h + so + 360) % 360;
+    if (!draai.kompasT || Date.now() - draai.kompasT > 250) { draai.kompasT = Date.now(); toonRichting(); }
+  }
+  function startKompas() {
+    if (draai.kompasAan) return; draai.kompasAan = true;
+    var luister = function () { window.addEventListener('deviceorientationabsolute', kompasEvent); window.addEventListener('deviceorientation', kompasEvent); };
+    if (window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) DeviceOrientationEvent.requestPermission().then(function (r) { if (r === 'granted') luister(); }).catch(function () {});
+    else luister();
+  }
+  function toonRichting() {
+    var h = looprichting(), pijl = document.getElementById('pospijl');
+    if (pijl) { pijl.classList.toggle('geenrichting', h == null); if (h != null) pijl.style.transform = 'rotate(' + ((draai.aan ? 0 : h)) + 'deg)'; }
+    if (draai.aan && h != null) {
+      var d = ((-h - draai.hoek) % 360 + 540) % 360 - 180;   // kortste draai
+      if (Math.abs(d) > 4) { draai.hoek += d; $('map').style.transform = 'rotate(' + draai.hoek + 'deg)'; }
+      var nn = $('noordpijl'); if (nn) nn.style.transform = 'rotate(' + draai.hoek + 'deg)';
+    }
+  }
+  function zetDraai(aan) {
+    var w = $('mapwrap'), m = $('map'), c = map.getCenter(), z = map.getZoom();
+    draai.aan = aan; w.classList.toggle('draai', aan); $('draaiknop').classList.toggle('aan', aan);
+    $('draaiknop').title = aan ? 'Kaart draait mee (tik op de kaart om weer met het noorden boven te werken)' : 'Kaart laten meedraaien met je looprichting';
+    if (aan) {
+      var W = w.clientWidth, H = w.clientHeight, Dg = Math.ceil(Math.sqrt(W * W + H * H));
+      m.style.width = Dg + 'px'; m.style.height = Dg + 'px'; m.style.left = ((W - Dg) / 2) + 'px'; m.style.top = ((H - Dg) / 2) + 'px';
+      startKompas();
+    } else { m.style.width = m.style.height = m.style.left = m.style.top = ''; m.style.transform = ''; draai.hoek = 0; }
+    map.invalidateSize({ pan: false });
+    map.setView(aan && pos ? pos.ll : c, aan ? Math.max(z, 18) : z, { animate: false });
+    toonRichting();
+  }
+  function draaiInit() {
+    var k = $('draaiknop'); if (!k) return;
+    k.onclick = function () {
+      if (!draai.aan && !pos) { melding('Zet eerst de GPS aan (Waar ben ik?).'); return; }
+      zetDraai(!draai.aan); schrijf('arb-draai', draai.aan);
+    };
+    // tik je op de kaart terwijl ze gedraaid is, dan gaat ze terug naar 'noorden boven' zodat je normaal kan schuiven en tikken
+    $('map').addEventListener('pointerdown', function () { if (draai.aan) { zetDraai(false); melding('Kaart staat weer met het noorden boven. Tik op 🧭 om ze opnieuw te laten meedraaien.'); setTimeout(function () { melding(''); }, 4000); } }, true);
+  }
 
   // ------------------------------------------------------------ zitbanken (OpenStreetMap + ter plaatse toegevoegd)
   var BANKEN = [];
