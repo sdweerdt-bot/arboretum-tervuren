@@ -130,7 +130,7 @@
       '<a class="knop" href="' + ROOT + 'aandenken/?w=' + w.id + '">Aandenken: bladwijzer en certificaat</a>' +
       (/kinderen|families/.test(w.id) ? '<a class="knop" href="' + ROOT + 'speurkaart/">Speurkaart, bingo en paspoort</a>' : '') +
       (w.stops.some(function (x) { return x.verhaal; }) ? '<button type="button" class="knop" id="gidsknop">Gidsteksten dichtklappen</button>' : '') + '</div>';
-    h += '<p class="waar"><b>Start en einde:</b> ' + esc(w.start.naam) + ' (begin van de beukendreef bij de slagboom, ter hoogte van de oprit van de boswachterswoning). <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + w.start.lat + ',' + w.start.lon + '">Route ernaartoe</a></p>';
+    h += '<p class="waar"><b>Start en einde:</b> ' + esc(w.start.naam) + (/Eikestraat/.test(w.start.naam) ? ' (begin van de beukendreef bij de slagboom, ter hoogte van de oprit van de boswachterswoning)' : '') + '. <a href="https://www.google.com/maps/dir/?api=1&amp;destination=' + w.start.lat + ',' + w.start.lon + '">Route ernaartoe</a></p>';
     h += kaartje(w);
     if (w.startverhaal) { var v = w.startverhaal; h += '<section class="startst" id="stop-0"><p class="hfst">' + esc(v.hoofdstuk || 'Vertrek') + '</p><h3><span class="snr">S</span>' + esc(v.titel) + '</h3>' + (v.tekst ? '<p class="tekst">' + esc(v.tekst) + '</p>' : '') + fotos(v) + gids(v) + meer(v) + '</section>'; }
     h += '<ol class="stops">';
