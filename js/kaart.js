@@ -275,25 +275,48 @@
   }
   function bewaarGezien() { schrijf('arb-wand-' + wand.id, wand.gezien); }
   // ------------------------------------------------------------ richtingaanwijzingen bij kruispunten
-  var AFSLAG = { r: ['⬆', 'ga rechtdoor bij het kruispunt'], l: ['⬅', 'sla linksaf'], rr: ['➡', 'sla rechtsaf'], L: ['↙', 'sla scherp linksaf'], R: ['↘', 'sla scherp rechtsaf'], o: ['↩', 'keer om en ga terug langs hetzelfde pad'] };
+  var AFSLAG = { r: ['⬆', 'ga rechtdoor bij het kruispunt'], l: ['⬅', 'sla linksaf'], rr: ['➡', 'sla rechtsaf'], L: ['↙', 'sla scherp linksaf'], R: ['↘', 'sla scherp rechtsaf'], o: ['↩', 'keer om en ga terug langs hetzelfde pad'],
+    bl: ['↰', 'volg het pad naar links'], br: ['↱', 'volg het pad naar rechts'] };
   function navVoorbereid() {
     if (wand.cum) return; wand.cum = [0];
     for (var i = 1; i < wand.route.length; i++) wand.cum.push(wand.cum[i - 1] + afstand(wand.route[i - 1], wand.route[i]));
-    wand.ri = 0; wand.gemeld = {};
+    wand.ri = 0; wand.s = null; wand.gemeld = {};
+  }
+  // Positie langs de route: loodrechte projectie op het dichtstbijzijnde routestuk (niet het dichtste hoekpunt),
+  // met voorkeur voor het stuk dat aansluit bij de vorige positie (belangrijk waar de route twee keer langs dezelfde plek loopt).
+  function opRoute(ll) {
+    var r = wand.route, best = null, cosl = Math.cos(ll[0] * RAD);
+    function proj(i) {
+      var a = r[i], b = r[i + 1];
+      var ax = (a[1] - ll[1]) * cosl, ay = a[0] - ll[0], bx = (b[1] - ll[1]) * cosl, by = b[0] - ll[0];
+      var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy, t = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+      var px = ax + t * dx, py = ay + t * dy, d = Math.sqrt(px * px + py * py) * RAD * R;
+      return { i: i, d: d, s: wand.cum[i] + t * (wand.cum[i + 1] - wand.cum[i]) };
+    }
+    function zoek(van, tot) {
+      for (var i = van; i < tot; i++) {
+        var p = proj(i), straf = 0;
+        if (wand.s !== null) { var ds = p.s - wand.s; straf = ds < -25 ? 25 : (ds > 400 ? 15 : 0); }   // achteruit of ver vooruit springen kost extra
+        p.sc = p.d + straf;
+        if (!best || p.sc < best.sc) best = p;
+      }
+    }
+    zoek(Math.max(0, wand.ri - 40), Math.min(r.length - 1, wand.ri + 300));
+    if (!best || best.d > 40) { best = null; zoek(0, r.length - 1); }
+    return best;
   }
   function navigatie() {
     var el = $('wnav'); if (!el) return;
     if (!wand || !pos || pos.hand || !wand.afslagen || !wand.afslagen.length) { el.hidden = true; return; }
     navVoorbereid();
-    var best = -1, bd = 1e9, van = Math.max(0, wand.ri - 15), tot = Math.min(wand.route.length, wand.ri + 250);
-    for (var i = van; i < tot; i++) { var d = afstand(pos.ll, wand.route[i]); if (d < bd) { bd = d; best = i; } }
-    if (bd > 40) { for (i = 0; i < wand.route.length; i++) { d = afstand(pos.ll, wand.route[i]); if (d < bd) { bd = d; best = i; } } }
-    if (bd > 40) { el.hidden = false; el.className = 'wnav weg'; el.innerHTML = '<span class="pijl">⚠</span><span>Je bent ' + fmtM(bd) + ' van de route. Ga terug naar de gekleurde lijn.</span>'; return; }
-    wand.ri = best;
-    var hier = wand.cum[best], a = null;
-    for (i = 0; i < wand.afslagen.length; i++) if (wand.afslagen[i][3] > best) { a = wand.afslagen[i]; break; }
+    var p = opRoute(pos.ll);
+    if (!p || p.d > 40) { el.hidden = false; el.className = 'wnav weg'; el.innerHTML = '<span class="pijl">⚠</span><span>Je bent ' + fmtM(p ? p.d : 999) + ' van de route. Ga terug naar de gekleurde lijn.</span>'; return; }
+    wand.ri = p.i; wand.s = p.s;
+    // volgende aanwijzing: de eerste die niet meer dan 8 m achter ons ligt (sta je op het kruispunt zelf, dan blijft ze staan)
+    var a = null, i;
+    for (i = 0; i < wand.afslagen.length; i++) { var sa = wand.cum[wand.afslagen[i][3]]; if (sa >= p.s - 8) { a = wand.afslagen[i]; break; } }
     if (!a) { el.hidden = true; return; }
-    var rest = Math.max(0, wand.cum[a[3]] - hier - (best + 1 < wand.route.length ? 0 : 0));
+    var rest = Math.max(0, wand.cum[a[3]] - p.s);
     if (rest > 70) { el.hidden = false; el.className = 'wnav ver'; el.innerHTML = '<span class="pijl">⬆</span><span>Volg het pad nog ' + fmtM(Math.round(rest / 10) * 10) + '</span>'; return; }
     var t = AFSLAG[a[2]] || AFSLAG.r, m = Math.max(5, Math.round(rest / 5) * 5);
     el.hidden = false; el.className = 'wnav' + (rest <= 25 ? ' nu' : '');
