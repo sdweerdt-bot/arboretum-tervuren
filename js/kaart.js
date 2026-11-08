@@ -62,6 +62,7 @@
     ['groepen', 'paden', 'reeksen', 'bomen', 'opname', 'wand', 'sel'].forEach(function (k) { lagen[k] = L.layerGroup().addTo(map); });
     tekenBasis();
     $('waar').addEventListener('click', wisselGps);
+    if ($('boomplusknop')) $('boomplusknop').addEventListener('click', boomPlus);
     document.querySelectorAll('.straal button').forEach(function (b) {
       b.addEventListener('click', function () {
         straal = +b.dataset.r;
@@ -583,10 +584,67 @@
   }
   function dlBlob(f) { var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
 
+  // ------------------------------------------------------------ ontbrekende boom toevoegen (ter plaatse, met de GPS)
+  // Met de GitHub-sleutel van de beheerpagina op dit toestel komt de boom meteen in data/extra_bomen.json (zichtbaar na 1-2 min);
+  // zonder sleutel blijft hij op dit toestel en toont de pagina de gegevens om door te sturen.
+  function taxonIndex(n) { for (var i = 0; i < D.taxa.length; i++) if (D.taxa[i][1] === n) return i; return -1; }
+  function voegExtraToe(x) {
+    var ti = taxonIndex(x.n); if (ti < 0) return null;
+    for (var i = 0; i < D.bomen.length; i++) if (D.bomen[i][0] === ti && afstand([D.bomen[i][2], D.bomen[i][3]], [x.lat, x.lon]) < 3) return null;   // staat er al (na een nieuwe build)
+    var b = [ti, x.g || '', x.lat, x.lon, x.om || 0, x.j || 0]; D.bomen.push(b); return b;
+  }
+  function toonExtra(b) {
+    if (!b || !lagen.bomen) return;
+    var t = D.taxa[b[0]], i = D.bomen.indexOf(b);
+    L.circleMarker([b[2], b[3]], { radius: 6, color: '#fff', weight: 2, fillColor: kleur(t[3]), fillOpacity: 1 }).bindPopup(function () { return popupStand(i, 'boom', b); }).addTo(lagen.bomen);
+  }
+  function boomPlus() {
+    var el = $('boomplus'); if (!el) return;
+    if (!pos) { melding('Zet eerst de GPS aan (Waar ben ik?) of tik zelf op de kaart, en ga bij de boom staan.'); return; }
+    var opties = D.taxa.map(function (t) { return '<option value="' + esc(t[1]) + '">' + esc(t[2] || '') + '</option>'; }).join('');
+    el.hidden = false;
+    el.innerHTML = '<h2>Ontbrekende boom toevoegen</h2><p class="muted">Ga zo dicht mogelijk bij de stam staan. Positie: ' + pos.ll[0].toFixed(6) + ', ' + pos.ll[1].toFixed(6) + (pos.acc ? ' (± ' + Math.round(pos.acc) + ' m)' : '') + '</p>' +
+      '<label>Soort (wetenschappelijke naam) <input id="bp-n" list="bp-lijst" autocomplete="off" placeholder="bv. Quercus frainetto"></label><datalist id="bp-lijst">' + opties + '</datalist>' +
+      '<label>Plantjaar <input id="bp-j" inputmode="numeric" placeholder="bv. 1908"></label><label>Omtrek in cm (op 1,50 m) <input id="bp-om" inputmode="numeric" placeholder="bv. 290"></label>' +
+      '<label>Opmerking <input id="bp-opm" placeholder="bv. mooi groot exemplaar"></label>' +
+      '<div class="d-acties"><button type="button" class="knop hoofd" id="bp-ok">Boom bewaren</button><button type="button" id="bp-weg">Annuleren</button></div><p id="bp-stat" class="muted"></p>';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('bp-weg').onclick = function () { el.hidden = true; el.innerHTML = ''; };
+    $('bp-ok').onclick = function () {
+      var n = $('bp-n').value.trim(); if (taxonIndex(n) < 0) { $('bp-stat').textContent = 'Kies een soort uit de lijst (wetenschappelijke naam).'; return; }
+      var x = { n: n, lat: +pos.ll[0].toFixed(6), lon: +pos.ll[1].toFixed(6), acc: pos.acc ? Math.round(pos.acc) : null, j: parseInt($('bp-j').value, 10) || 0, om: parseInt($('bp-om').value, 10) || 0,
+        opm: $('bp-opm').value.trim(), datum: new Date().toISOString().slice(0, 10), bron: 'ter plaatse toegevoegd' };
+      var tekst = x.n + ' · ' + x.lat + ', ' + x.lon + (x.j ? ' · geplant ' + x.j : '') + (x.om ? ' · omtrek ' + x.om + ' cm' : '') + (x.opm ? ' · ' + x.opm : '');
+      toonExtra(voegExtraToe(x));
+      var token = lees('arb-gh-token', '');
+      if (!token) {
+        var q = lees('arb-boomwachtrij', []); q.push(x); schrijf('arb-boomwachtrij', q);
+        $('bp-stat').innerHTML = 'Bewaard op dit toestel (geen GitHub-sleutel hier). Stuur deze gegevens door om de boom op de kaart te zetten:<br><b>' + esc(tekst) + '</b>';
+        return;
+      }
+      $('bp-stat').textContent = 'Opladen…';
+      var api = 'https://api.github.com/repos/sdweerdt-bot/arboretum-tervuren/contents/data/extra_bomen.json', h = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+      fetch(api + '?ref=main', { headers: h, cache: 'no-store' }).then(function (r) { return r.status === 404 ? null : r.ok ? r.json() : Promise.reject(new Error('lezen: ' + r.status)); }).then(function (f) {
+        var lijst = f ? JSON.parse(decodeURIComponent(escape(atob(f.content.replace(/\s/g, ''))))) : [];
+        lijst.push(x);
+        var body = { message: 'Boom toegevoegd ter plaatse: ' + x.n, content: btoa(unescape(encodeURIComponent(JSON.stringify(lijst, null, 0).replace(/\},\{/g, '},\n{')))), branch: 'main' };
+        if (f) body.sha = f.sha;
+        return fetch(api, { method: 'PUT', headers: h, body: JSON.stringify(body) });
+      }).then(function (r) {
+        if (!r.ok) throw new Error('bewaren: ' + r.status);
+        $('bp-stat').innerHTML = '✓ Bewaard. De boom staat nu op jouw kaart en binnen een à twee minuten voor iedereen.<br>' + esc(tekst);
+      }).catch(function (e) {
+        var q = lees('arb-boomwachtrij', []); q.push(x); schrijf('arb-boomwachtrij', q);
+        $('bp-stat').innerHTML = 'Opladen lukte niet (' + esc(e.message) + '). Bewaard op dit toestel; stuur deze gegevens door:<br><b>' + esc(tekst) + '</b>';
+      });
+    };
+  }
+
   // ------------------------------------------------------------ opstart
-  Promise.all([fetch(ROOT + 'data/arboretum.json').then(function (r) { return r.json(); }), fetch(ROOT + 'data/wandelingen.json').then(function (r) { return r.json(); })])
+  Promise.all([fetch(ROOT + 'data/arboretum.json').then(function (r) { return r.json(); }), fetch(ROOT + 'data/wandelingen.json').then(function (r) { return r.json(); }),
+    fetch(ROOT + 'data/extra_bomen.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })])
     .then(function (x) {
-      D = x[0]; WAND = x[1];
+      D = x[0]; WAND = x[1]; (x[2] || []).forEach(voegExtraToe);
       if (window.L && L.map) start(); else window.addEventListener('leaflet-klaar', start, { once: true });
     }).catch(function () { melding('De kaartgegevens konden niet geladen worden.'); });
 })();
