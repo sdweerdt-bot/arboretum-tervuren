@@ -455,3 +455,9 @@ h2[id]{scroll-margin-top:4.5rem}
 #padopname{border:2px solid #e65100}#padopname label{display:block;margin:.35rem 0}#padopname input,#padopname select{width:100%;box-sizing:border-box;padding:.35rem;font-size:1rem}
 .syncinfo{background:#fff8e1;border:1px solid #f0c36d;padding:.4rem .6rem;border-radius:6px;margin:.4rem 0;font-size:.9rem}
 .rood{color:#c62828}
+
+/* andere bomen van het thema in de buurt (tijdens een wandeling) */
+.wthema{background:#f3f7ef;border:1px solid #b9cfa8;border-radius:8px;padding:.4rem .6rem;margin:.5rem 0}
+.wthema h3{margin:.1rem 0 .3rem;font-size:1rem}.thema-lijst{list-style:none;margin:0;padding:0}
+.thema-lijst li{padding:.3rem 0;border-top:1px solid #dde8d3;display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}
+.thema-lijst .ta{min-width:4.5em;font-size:.85rem;color:#555}.thema-lijst .tk{margin-left:auto;display:flex;gap:.3rem}

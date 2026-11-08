@@ -253,9 +253,36 @@
     var c = Object.keys(D.groepen).filter(function (c) { return D.groepen[c].r.some(function (ring) { return inRing(p, ring); }); })[0];
     return c || null;
   }
+  // tijdens een themawandeling: andere bomen van het thema (bv. eiken) in de buurt, met snelle link naar de fiche
+  function themaGeslacht() {
+    if (!wand) return null;
+    if (wand.geslacht !== undefined) return wand.geslacht;
+    var tel = {}, n = 0;
+    wand.stops.forEach(function (s) { if (s.n) { var g = s.n.split(' ')[0]; tel[g] = (tel[g] || 0) + 1; n++; } });
+    var g = Object.keys(tel).sort(function (a, b) { return tel[b] - tel[a]; })[0];
+    wand.geslacht = g && tel[g] >= 0.6 * n ? g : null;
+    return wand.geslacht;
+  }
+  var NL_GESLACHT = { Quercus: 'eiken', Juglans: 'noten', Carya: 'noten', Acer: 'esdoorns', Pinus: 'dennen', Abies: 'zilversparren', Picea: 'sparren' };
+  function themaDichtbij() {
+    var el = $('wthema'); if (!el) return;
+    if (!wand || !pos) { el.hidden = true; return; }
+    var g = themaGeslacht(), alle = el.dataset.alle === '1';
+    var items = wieDichtbij(pos.ll, 40).filter(function (x) { return alle || !g || D.taxa[x.ti][1].split(' ')[0] === g; }).slice(0, 6);
+    var titel = g && !alle ? (NL_GESLACHT[g] ? NL_GESLACHT[g].charAt(0).toUpperCase() + NL_GESLACHT[g].slice(1) : g) + ' in de buurt' : 'Bomen in de buurt';
+    el.hidden = false;
+    el.innerHTML = '<h3>' + esc(titel) + ' <span class="muted">(binnen 40 m)</span>' + (g ? ' <button type="button" class="sec" id="wthema-wissel">' + (alle ? 'alleen ' + esc(NL_GESLACHT[g] || g) : 'alle soorten') + '</button>' : '') + '</h3>' +
+      (items.length ? '<ul class="thema-lijst">' + items.map(function (x) {
+        var t = taxon(x.ti), ll = x.ll[0].toFixed(6) + ',' + x.ll[1].toFixed(6);
+        return '<li><span class="ta">' + (x.d < 1 ? 'hier' : fmtM(x.d) + ' ' + richting(pos.ll, x.ll)) + '</span> <b>' + esc(t.nl || t.n) + '</b> ' + (t.nl ? '<i class="muted">' + esc(t.n) + '</i>' : '') +
+          '<span class="tk"><a class="kn" target="_blank" href="' + fiche(t.slug) + '">Fiche</a>' + (t.eik ? '<a class="kn" target="_blank" href="' + EIKEN + t.eik + '/">Eikfiche</a>' : '') + '<button type="button" data-ll="' + ll + '">Toon</button></span></li>';
+      }).join('') + '</ul>' : '<p class="muted">Geen ' + esc(g && !alle ? (NL_GESLACHT[g] || g) : 'bomen uit de collectie') + ' binnen 40 m.</p>');
+    var k = $('wthema-wissel'); if (k) k.onclick = function () { el.dataset.alle = alle ? '0' : '1'; themaDichtbij(); };
+  }
   function dichtbij() {
     var el = $('dlijst');
     if (!pos) return;
+    themaDichtbij();
     $('dstat').textContent = pos.hand ? '(gekozen punt)' : '(± ' + Math.round(pos.acc) + ' m, ' + new Date(pos.t).toLocaleTimeString('nl-BE') + ')';
     var c = inGroep(pos.ll), h = hoofd(c), kop = '';
     if (c) kop = '<p class="waar">Je staat in <b>groep ' + esc(c) + '</b>: ' + esc(groepNaam(c)) + (D.hoofd[h] ? ' · <a href="' + ROOT + 'groep/' + h + '/">' + esc(D.hoofd[h]) + '</a>' : '') + '</p>';
