@@ -114,6 +114,11 @@
     document.title = w.titel + ' | Arboretum Tervuren';
     var h = '<div style="--kl:' + w.kleur + '"><p class="crumb"><a href="' + ROOT + 'wandelingen/">Wandelingen</a>' + (w.soort === 'officieel' ? ' › bewegwijzerde lus' : '') + '</p><h1>' + esc(w.titel) + '</h1>';
     h += '<p class="muted">' + w.stops.length + ' stops · ongeveer ' + km(w.lengte) + ' km' + (w.weide > 150 ? ', waarvan ' + km(w.weide) + ' km langs of over weiden' : '') + (w.folder ? ' · bewegwijzerd: ' + esc(w.folder) : '') + (w.seizoen ? ' · beste periode: ' + esc(w.seizoen) : '') + '</p>';
+    var lw = w.variant_van && window.ARB_W ? window.ARB_W[w.variant_van] : null, kw = w.kort && window.ARB_W ? window.ARB_W[w.kort] : null;
+    if (lw || kw) h += '<div class="versies"><span>Kies je versie:</span>' +
+      (lw ? '<a class="knop" href="?w=' + lw.id + '">Lange wandeling · ' + lw.stops.length + ' stops · ' + km(lw.lengte) + ' km</a><b class="knop aan">Korte wandeling · ' + w.stops.length + ' stops · ' + km(w.lengte) + ' km</b>'
+          : '<b class="knop aan">Lange wandeling · ' + w.stops.length + ' stops · ' + km(w.lengte) + ' km</b><a class="knop" href="?w=' + kw.id + '">Korte wandeling · ' + kw.stops.length + ' stops · ' + km(kw.lengte) + ' km</a>') +
+      (lw && w.kortuitleg ? '<p class="muted">' + esc(w.kortuitleg) + '</p>' : kw && kw.kortuitleg ? '<p class="muted">' + esc(kw.kortuitleg) + '</p>' : '') + '</div>';
     if (w.intro) h += '<p class="tekst">' + esc(w.intro) + '</p>';
     if (w.rodedraad) h += '<div class="gb rood"><b>Rode draad</b>' + alineas(w.rodedraad) + '</div>';
     if (w.praktisch) h += '<div class="gb prak"><b>Voor de gids</b>' + alineas(w.praktisch) + '</div>';
@@ -135,12 +140,14 @@
         (s.n ? ' <span class="muted">· groep ' + esc(s.g || '–') + (window.ARB_ZONE(s.g) ? ' (' + esc(window.ARB_ZONE(s.g)) + ')' : '') + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + '</span>' : '') + '</p>' +
         (s.tekst ? '<p class="tekst">' + esc(s.tekst) + '</p>' : '') + fotos(s) + gids(s) + meer(s) +
         '<p>' + (s.slug ? '<a href="' + ROOT + 'soort/' + s.slug + '/' + q + '">Plantenfiche</a> · ' : '') + (s.eik ? '<a href="' + EIKEN + s.eik + '/">Eikfiche</a> · ' : '') +
-        '<a href="' + ROOT + 'kaart/?w=' + w.id + '&amp;ll=' + s.lat + ',' + s.lon + '">op de kaart</a></p></li>';
+        '<a href="' + ROOT + 'kaart/?w=' + w.id + '&amp;ll=' + s.lat + ',' + s.lon + '">op de kaart</a></p>' +
+        '<p class="fotoneem"><label class="knop">📷 Foto nemen of kiezen<input type="file" accept="image/*" hidden data-fotostop="' + k + '"></label><span class="fotostatus" id="fs-' + k + '"></span></p></li>';
     });
     h += '</ol>' + (w.afsluiter ? '<div class="gb rood"><b>Afsluiter</b>' + alineas(w.afsluiter) + '</div>' : '') + '<p class="waar">Terug naar het vertrekpunt: ' + esc(w.start.naam) + '.</p>';
     if (w.soort === 'officieel') h += '<p class="bron">Route: bewegwijzerde wandellus uit de wandelfolder van het Geografisch Arboretum Tervuren (arboretum-tervuren.be), overgenomen op de kaart; stops en teksten: deze gids. Volg ter plaatse de bewegwijzering.</p>';
     else h += '<p class="bron">De route volgt zo veel mogelijk de paden van de arboretumkaart; waar geen pad gekend is, is de lijn recht getrokken. Volg ter plaatse altijd de bestaande paden.</p>';
     el.innerHTML = h + '</div>';
+    window.ARB_FOTONEEM && window.ARB_FOTONEEM(el, w);
     var gk = document.getElementById('gidsknop');
     if (gk) gk.addEventListener('click', function () {
       var open = gk.textContent.indexOf('dicht') >= 0;
@@ -151,12 +158,13 @@
   }
   function regel(w, pre) {
     return '<li><a href="' + pre + 'wandeling/?w=' + w.id + '" style="--kl:' + w.kleur + '"><b>' + esc(w.titel) + '</b><span>' + w.stops.length + ' stops · ± ' + km(w.lengte) + ' km' +
-      (w.soort === 'officieel' ? ' · ' + esc(w.folder) : ' · ' + esc(w.seizoen || '')) + '</span></a></li>';
+      (w.soort === 'officieel' ? ' · ' + esc(w.folder) : ' · ' + esc(w.seizoen || '')) + (w.kort && window.ARB_W && window.ARB_W[w.kort] ? ' · ook korte versie (± ' + km(window.ARB_W[w.kort].lengte) + ' km)' : '') + '</span></a></li>';
   }
   function lijsten(W) {
+    window.ARB_W = {}; W.forEach(function (w) { window.ARB_W[w.id] = w; });
     document.querySelectorAll('[data-wandellijst]').forEach(function (el) {
       var soort = el.dataset.wandellijst, pre = el.dataset.pre || ROOT;
-      var l = W.filter(function (w) { return !w.verborgen && (soort === 'alle' || (w.soort || 'thema') === soort); });
+      var l = W.filter(function (w) { return !w.verborgen && !w.variant_van && (soort === 'alle' || (w.soort || 'thema') === soort); });
       el.innerHTML = l.map(function (w) { return regel(w, pre); }).join('') || '<li class="los">Nog geen wandelingen.</li>';
     });
   }
@@ -164,7 +172,7 @@
     var el = document.getElementById('in-wandelingen'); if (!el) return;
     var n = el.dataset.n, h = '';
     W.forEach(function (w) {
-      if (w.verborgen) return;
+      if (w.verborgen || w.variant_van) return;
       w.stops.forEach(function (s, i) {
         if (s.n !== n) return;
         h += '<div class="dash"><b>In ' + esc(w.titel) + '</b> (stop ' + (i + 1) + (s.titel ? ': ' + esc(s.titel) : '') + ')' + (s.tekst ? '<p class="tekst">' + esc(s.tekst) + '</p>' : '') +
@@ -232,6 +240,7 @@
     };
   }
   fetch(ROOT + 'data/wandelingen.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (W) {
+    window.ARB_W = {}; W.forEach(function (w) { window.ARB_W[w.id] = w; });
     var tp = document.getElementById('teaserpagina');
     if (tp) { var tid = new URLSearchParams(location.search).get('w'), tw = W.filter(function (x) { return x.id === tid; })[0]; if (tw) teaser(tw, tp); else tp.innerHTML = '<p>Wandeling niet gevonden. <a href="' + ROOT + 'wandelingen/">Alle wandelingen</a></p>'; }
     var fp = document.getElementById('folderpagina');
@@ -243,4 +252,88 @@
     }
     lijsten(W); ficheKader(W);
   });
+})();
+
+// ---------------------------------------------------------------- eigen foto's bij een stop (ter plaatse nemen of kiezen)
+// Met een GitHub-sleutel op dit toestel (ingesteld op de beheerpagina) gaat de foto meteen online bij de stop.
+// Zonder sleutel blijft ze in een wachtrij op dit toestel; de beheerpagina neemt ze op in het concept en laadt ze op bij Publiceren.
+(function () {
+  'use strict';
+  var REPO = 'sdweerdt-bot/arboretum-tervuren', PAD = 'data/wandelingen.json', TAK = 'main', ROOT = document.body.dataset.root || '../';
+  function lees(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function verklein(file) {
+    var max = 1400;
+    var laad = window.createImageBitmap ? createImageBitmap(file, { imageOrientation: 'from-image' }) : new Promise(function (ok, nok) {
+      var im = new Image(); im.onload = function () { ok(im); }; im.onerror = nok; im.src = URL.createObjectURL(file);
+    });
+    return laad.then(function (im) {
+      var f = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
+      c.width = Math.round(im.width * f); c.height = Math.round(im.height * f);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      return c.toDataURL('image/jpeg', 0.8);
+    });
+  }
+  function b64utf8(b) { return decodeURIComponent(escape(atob(b.replace(/\s/g, '')))); }
+  function utf8b64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function zoekStop(W, wid, k, n, titel) {
+    var x = W.filter(function (a) { return a.id === wid; })[0]; if (!x) return null;
+    var s = x.stops[k];
+    if (s && (s.n || '') === (n || '') && s.titel === titel) return s;
+    return x.stops.filter(function (a) { return (a.n || '') === (n || '') && a.titel === titel; })[0] || null;
+  }
+  function online(token, item) {
+    var h = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+    var pad = 'img/wandelingen/' + item.w + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) + '.jpg';
+    var api = 'https://api.github.com/repos/' + REPO + '/contents/';
+    return fetch(api + pad, { method: 'PUT', headers: h, body: JSON.stringify({ message: 'Foto bij wandeling ' + item.w + ' (ter plaatse genomen)', content: item.data.split(',')[1], branch: TAK }) })
+      .then(function (r) { if (!r.ok) throw new Error('foto: ' + r.status); return fetch(api + PAD + '?ref=' + TAK, { headers: h, cache: 'no-store' }); })
+      .then(function (r) { if (!r.ok) throw new Error('lezen: ' + r.status); return r.json(); })
+      .then(function (meta) {
+        var inh = meta.content ? Promise.resolve(b64utf8(meta.content)) :
+          fetch(api + PAD + '?ref=' + TAK, { headers: { Authorization: h.Authorization, Accept: 'application/vnd.github.raw' }, cache: 'no-store' }).then(function (r) { return r.text(); });
+        return inh.then(function (t) {
+          var W = JSON.parse(t), s = zoekStop(W, item.w, item.k, item.n, item.t);
+          if (!s) throw new Error('stop niet gevonden');
+          (s.fotos = s.fotos || []).push({ src: pad, bijschrift: item.b || '', bron: 'Eigen foto' + (item.d ? ', ' + item.d : '') });
+          return fetch(api + PAD, { method: 'PUT', headers: h, body: JSON.stringify({ message: 'Eigen foto bij ' + item.w + ', stop ' + (item.k + 1), content: utf8b64(JSON.stringify(W)), sha: meta.sha, branch: TAK }) });
+        });
+      }).then(function (r) { if (!r.ok) throw new Error('bewaren: ' + r.status); return pad; });
+  }
+  function wachtrij() { return lees('arb-fotowachtrij', []); }
+  function zetWachtrij(q) { localStorage.setItem('arb-fotowachtrij', JSON.stringify(q)); }
+  window.ARB_FOTONEEM = function (el, w) {
+    var q = wachtrij().filter(function (a) { return a.w === w.id; });
+    if (q.length) {
+      var p = document.createElement('p'); p.className = 'fotowacht';
+      p.innerHTML = '📷 ' + q.length + ' eigen foto' + (q.length > 1 ? "'s" : '') + ' van deze wandeling wacht' + (q.length > 1 ? 'en' : '') + ' op dit toestel om opgeladen te worden. <a href="' + ROOT + 'beheer/">Open de beheerpagina</a> en tik op Publiceren.';
+      var st = el.querySelector('.stops'); if (st) st.parentNode.insertBefore(p, st);
+      q.forEach(function (a) { var fs = document.getElementById('fs-' + a.k); if (fs) fs.innerHTML = '<img class="fotomini" src="' + a.data + '" alt=""> wacht op opladen'; });
+    }
+    el.addEventListener('change', function (e) {
+      var inp = e.target; if (!inp.dataset || inp.dataset.fotostop === undefined || !inp.files || !inp.files[0]) return;
+      var k = +inp.dataset.fotostop, s = w.stops[k], fs = document.getElementById('fs-' + k), file = inp.files[0];
+      inp.value = '';
+      fs.textContent = 'Foto verwerken…';
+      verklein(file).then(function (data) {
+        var b = prompt('Korte beschrijving bij de foto (bv. "blad", "schors", "vrucht"). Mag leeg blijven.\nTip: geen herkenbare personen op de foto.', '');
+        if (b === null) { fs.textContent = ''; return; }
+        var item = { w: w.id, k: k, n: s.n || '', t: s.titel, b: b.trim(), d: new Date().toLocaleDateString('nl-BE'), data: data };
+        fs.innerHTML = '<img class="fotomini" src="' + data + '" alt=""> ';
+        var token = lees('arb-gh-token', '');
+        if (token) {
+          fs.insertAdjacentHTML('beforeend', 'Opladen…');
+          return online(token, item).then(function () {
+            fs.innerHTML = '<img class="fotomini" src="' + data + '" alt=""> ✓ Opgeladen. Binnen een à twee minuten staat ze online bij deze stop.';
+          }).catch(function (er) {
+            var q = wachtrij(); q.push(item); try { zetWachtrij(q); } catch (x) {}
+            fs.innerHTML = '<img class="fotomini" src="' + data + '" alt=""> Opladen lukte niet (' + esc(er.message) + '). De foto is bewaard op dit toestel; publiceer later via de beheerpagina.';
+          });
+        }
+        var q = wachtrij(); q.push(item);
+        try { zetWachtrij(q); fs.insertAdjacentHTML('beforeend', 'Bewaard op dit toestel. Open later de <a href="' + ROOT + 'beheer/">beheerpagina</a> en tik op Publiceren om ze online te zetten.'); }
+        catch (x) { fs.insertAdjacentHTML('beforeend', 'Het geheugen van dit toestel is vol: publiceer eerst de wachtende foto\'s via de beheerpagina.'); }
+      }).catch(function () { fs.textContent = 'Deze foto kon niet gelezen worden.'; });
+    });
+  };
 })();

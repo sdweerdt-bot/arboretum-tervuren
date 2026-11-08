@@ -421,3 +421,14 @@ h2.kopl a{color:inherit;text-decoration:none;border-bottom:2px solid transparent
 h2.kopl a span{font-size:.8em;opacity:.6;margin-left:.2em}
 h2.kopl a:hover,h2.kopl a:focus{border-bottom-color:currentColor}
 h2[id]{scroll-margin-top:4.5rem}
+
+/* eigen foto nemen bij een stop */
+.fotoneem{margin:.3rem 0 0}.fotoneem .knop{cursor:pointer;font-size:.9rem}
+.fotostatus{margin-left:.5rem;font-size:.85rem;color:#555}
+.fotomini{height:2.4rem;width:2.4rem;object-fit:cover;vertical-align:middle;border-radius:4px;margin-right:.3rem}
+.fotowacht{background:#fff8e1;border:1px solid #f0c36d;padding:.5rem .7rem;border-radius:6px}
+@media print{.fotoneem{display:none}}
+
+/* korte en lange versie van een wandeling */
+.versies{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.6rem 0}.versies>span{font-weight:bold;margin-right:.2rem}
+.versies .knop.aan{background:var(--kl,#0b4a45);color:#fff;border-color:var(--kl,#0b4a45)}.versies p{flex-basis:100%;margin:.2rem 0 0}

@@ -289,6 +289,22 @@
     if (c) $('conceptinfo').textContent = 'Er is een niet-gepubliceerd concept van ' + new Date(c.t).toLocaleString('nl-BE') + ' op dit toestel.';
     $('b-concept').onclick = function () { W = c.W; cur = 0; lijstWandelingen(); toon(); $('concept').hidden = true; melding('Concept geladen.'); };
     $('b-online').onclick = function () { localStorage.removeItem('arb-beheer-concept'); location.reload(); };
+    // ter plaatse genomen foto's (wandelpagina, zonder sleutel) opnemen in het concept
+    var fq = lees('arb-fotowachtrij', []);
+    if (fq.length) {
+      var ok = 0;
+      var DOEL = c ? c.W : W;   // bestaand concept niet overschrijven: foto's daarin opnemen
+      fq.forEach(function (a) {
+        var x = DOEL.filter(function (y) { return y.id === a.w; })[0]; if (!x) return;
+        var s = x.stops[a.k]; if (!(s && (s.n || '') === a.n && s.titel === a.t)) s = x.stops.filter(function (y) { return (y.n || '') === a.n && y.titel === a.t; })[0];
+        if (!s) return;
+        (s.fotos = s.fotos || []).push({ src: a.data, bijschrift: a.b || '', bron: 'Eigen foto' + (a.d ? ', ' + a.d : '') }); ok++;
+      });
+      try { localStorage.setItem('arb-beheer-concept', JSON.stringify({ t: Date.now(), W: DOEL })); localStorage.removeItem('arb-fotowachtrij'); } catch (e) {}
+      if (!c) { c = { t: Date.now(), W: DOEL }; }
+      W = c.W; $('concept').hidden = true;
+      setTimeout(function () { melding(ok + ' ter plaatse genomen foto' + (ok === 1 ? '' : "'s") + ' toegevoegd aan het concept. Tik op <b>Publiceren</b> om ze online te zetten.'); }, 300);
+    }
     lijstWandelingen(); startKaart(); toon();
     $('wkeuze').onchange = function () { leesFormulier(); cur = +this.value; toon(); };
     ['f-titel', 'f-kleur', 'f-seizoen', 'f-intro', 'f-soort', 'f-folder', 'f-verborgen', 'f-rodedraad', 'f-praktisch', 'f-afsluiter', 't-kop', 't-tekst', 't-datum', 't-uur', 't-prijs', 't-duur', 't-inschrijven', 't-meebrengen'].forEach(function (id) { $(id).addEventListener('change', function () { leesFormulier(); lijstWandelingen(); toon(); }); });
