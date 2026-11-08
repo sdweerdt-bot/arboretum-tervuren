@@ -273,7 +273,7 @@
     wand.toon = null; wand.bij = null; wand.vast = null;
     var sp = $('wspraak');
     if (sp && !sp.dataset.klaar) {
-      sp.dataset.klaar = 1; sp.checked = lees('arb-spraak', true);
+      sp.dataset.klaar = 1; sp.checked = lees('arb-spraak', false);
       sp.onchange = function () { schrijf('arb-spraak', sp.checked); if (sp.checked && window.speechSynthesis) { var u = new SpeechSynthesisUtterance('Gesproken aanwijzingen staan aan'); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u); } };
     }
     $('wvorige').onclick = function () { var i = huidigeStop(); wand.toon = Math.max(0, i - 1); wand.vast = pos ? pos.ll : [0, 0]; wandelingVolg(); };
@@ -351,7 +351,23 @@
   function huidigeStop() { return wand.toon !== null && wand.toon !== undefined ? wand.toon : (wand.bij !== null && wand.bij !== undefined ? wand.bij : volgendeIndex()); }
   function zeg(t) {
     if (!($('wspraak') && $('wspraak').checked && window.speechSynthesis)) return;
-    var u = new SpeechSynthesisUtterance(t); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u);
+    var u = new SpeechSynthesisUtterance(t); u.lang = 'nl-BE';
+    if (!(speechSynthesis.speaking && Date.now() - leestSinds < 90000)) speechSynthesis.cancel();   // stopinfo niet onderbreken, aanwijzing komt erna
+    speechSynthesis.speak(u);
+  }
+  var leestSinds = 0;
+  // langere tekst voorlezen: per zin, want sommige gsm's breken lange zinnen af
+  function leesVoor(t, altijd) {
+    if (!window.speechSynthesis || (!altijd && !($('wspraak') && $('wspraak').checked))) return;
+    speechSynthesis.cancel(); leestSinds = Date.now();
+    String(t || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).forEach(function (z) {
+      z = z.trim(); if (!z) return;
+      var u = new SpeechSynthesisUtterance(z); u.lang = 'nl-BE'; speechSynthesis.speak(u);
+    });
+  }
+  function stopTekstKort(s, i) { return 'Je bent bij stop ' + (i + 1) + ': ' + s.titel + '. ' + (s.tekst || ''); }
+  function stopTekstLang(s, i) {
+    return 'Stop ' + (i + 1) + ': ' + s.titel + '. ' + (s.nl ? s.nl + '. ' : '') + (s.tekst || '') + ' ' + (s.verhaal || '') + ' ' + (s.kijk ? 'Kijk: ' + s.kijk : '') + ' ' + (s.weetje ? 'Weetje: ' + s.weetje : '');
   }
   function wandelingVolg() {
     if (!wand) return;
@@ -362,7 +378,7 @@
         if (wand.gezien.indexOf(i) < 0 && afstand(pos.ll, [s.lat, s.lon]) < straal) {
           wand.gezien.push(i); bewaarGezien(); wand.bij = i;
           if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
-          if (!wand.vast) zeg('Je bent bij stop ' + (i + 1) + ': ' + s.titel);
+          if (!wand.vast) leesVoor(stopTekstKort(s, i));
         }
       });
       if (wand.bij !== null && wand.bij !== undefined && afstand(pos.ll, [wand.stops[wand.bij].lat, wand.stops[wand.bij].lon]) > 45) wand.bij = null;
@@ -384,7 +400,11 @@
       (s.n ? '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' : '<p class="muted">' + esc(s.plaats || '') + '</p>') +
       '<p class="tekst">' + esc(s.tekst) + '</p>' + (s.fotos && s.fotos.length ? '<div class="sfotos">' + s.fotos.map(function (f) { return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="" loading="lazy"></a>' + (f.bijschrift ? '<figcaption>' + esc(f.bijschrift) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') +
       (s.weetje ? '<div class="gb weetje"><b>Weetje</b><p>' + esc(s.weetje) + '</p></div>' : '') +
-      '<div class="d-acties">' + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button>' + (s.slug ? '<a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' : '') + eikKnop(s.eik) + '</div>';
+      '<div class="d-acties">' + (window.speechSynthesis ? '<button type="button" id="wvoorlees">' + (speechSynthesis.speaking ? '⏹ Stop voorlezen' : '🔊 Voorlezen') + '</button>' : '') + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button>' + (s.slug ? '<a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' : '') + eikKnop(s.eik) + '</div>';
+    if ($('wvoorlees')) $('wvoorlees').onclick = function () {
+      if (speechSynthesis.speaking) { speechSynthesis.cancel(); leestSinds = 0; this.textContent = '🔊 Voorlezen'; return; }
+      leesVoor(stopTekstLang(s, i), true); this.textContent = '⏹ Stop voorlezen';
+    };
     var fb = $('wfotoblok');
     if (fb && window.ARB_FOTO_VERWERK) { fb.hidden = false; if ($('wfoto').dataset.stop !== String(i)) { $('wfoto').dataset.stop = i; $('wfotostatus').innerHTML = ''; } $('wfotolabel').textContent = '📷 Foto nemen of kiezen bij stop ' + (i + 1); }
   }
