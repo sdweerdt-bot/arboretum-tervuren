@@ -77,6 +77,9 @@
       if (b) { var ll = b.dataset.ll.split(','); map.setView([+ll[0], +ll[1]], Math.max(map.getZoom(), 18)); $('map').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
       var t = e.target.closest('[data-toon]');
       if (t) { e.preventDefault(); markeerTaxon(t.dataset.toon); }
+      var k = e.target.closest('[data-kal]');
+      if (k) { var q = k.dataset.kal.split(','); map.closePopup(); kalibreer(+q[0], +q[1], k.dataset.kalnaam || 'deze plek'); }
+      if (e.target.closest('[data-kalweg]')) { KAL = null; if (pos && pos.ruw) nieuwePos({ coords: { latitude: pos.ruw[0], longitude: pos.ruw[1], accuracy: pos.acc } }, false); melding('Bijstelling ongedaan gemaakt.'); }
     });
     zoekInit(); opnameInit();
     map.on('click', function (e) { if (!pos && $('handmatig').checked) nieuwePos({ coords: { latitude: e.latlng.lat, longitude: e.latlng.lng, accuracy: 5 } }, true); });
@@ -95,7 +98,8 @@
       (x[1] ? ' · groep ' + esc(x[1]) + (groepNaam(x[1]) ? ' (' + esc(groepNaam(x[1])) + ')' : '') : '') +
       (x[soort === 'reeks' ? 8 : 5] ? ' · geplant ' + x[soort === 'reeks' ? 8 : 5] : '') +
       (x[soort === 'reeks' ? 7 : 4] ? ' · omtrek ' + x[soort === 'reeks' ? 7 : 4] + ' cm' : '') + '</span>';
-    h += '<div class="pk"><a href="' + fiche(t.slug) + '">Plantenfiche</a> ' + (t.eik ? '<a href="' + EIKEN + t.eik + '/">Eikfiche</a> ' : '') + '<button class="sec" type="button" data-toon="' + t.slug + '">Alle exemplaren</button></div>';
+    h += '<div class="pk"><a href="' + fiche(t.slug) + '">Plantenfiche</a> ' + (t.eik ? '<a href="' + EIKEN + t.eik + '/">Eikfiche</a> ' : '') + '<button class="sec" type="button" data-toon="' + t.slug + '">Alle exemplaren</button>' +
+      (soort === 'boom' && pos && !pos.hand ? '<button class="sec" type="button" data-kal="' + x[2] + ',' + x[3] + '" data-kalnaam="' + esc(t.nl || t.n) + '">📍 Ik sta bij deze boom</button>' : '') + '</div>';
     return h;
   }
 
@@ -206,8 +210,11 @@
   }
 
   function nieuwePos(p, handmatig) {
-    pos = { ll: [p.coords.latitude, p.coords.longitude], acc: p.coords.accuracy || 0, t: Date.now(), hand: !!handmatig };
-    if (!handmatig) $('waar').textContent = '± ' + Math.round(pos.acc) + ' m';
+    var ruw = [p.coords.latitude, p.coords.longitude];
+    if (KAL && !handmatig && (Date.now() - KAL.t > 20 * 60000 || afstand(ruw, KAL.ruw) > 400)) { KAL = null; melding('De bijstelling van de GPS is gestopt (20 minuten of 400 m verder). Sta je weer bij een stop of boom, dan kan je opnieuw bijstellen.'); }
+    var ll = KAL && !handmatig ? [ruw[0] + KAL.dlat, ruw[1] + KAL.dlon] : ruw;
+    pos = { ll: ll, ruw: ruw, acc: p.coords.accuracy || 0, t: Date.now(), hand: !!handmatig };
+    if (!handmatig) $('waar').textContent = '± ' + Math.round(pos.acc) + ' m' + (KAL ? ' · bijgesteld' : '');
     if (!handmatig) volgRichting(p);
     if (!posDot) {
       posCirkel = L.circle(pos.ll, { radius: pos.acc, color: '#1a73e8', weight: 1, fillColor: '#1a73e8', fillOpacity: 0.12, interactive: false }).addTo(map);
@@ -404,7 +411,7 @@
       (s.n ? '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' : '<p class="muted">' + esc(s.plaats || '') + '</p>') +
       '<p class="tekst">' + esc(s.tekst) + '</p>' + (s.fotos && s.fotos.length ? '<div class="sfotos">' + s.fotos.map(function (f) { return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="" loading="lazy"></a>' + (f.bijschrift ? '<figcaption>' + esc(f.bijschrift) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') +
       (s.weetje ? '<div class="gb weetje"><b>Weetje</b><p>' + esc(s.weetje) + '</p></div>' : '') +
-      '<div class="d-acties">' + (window.speechSynthesis ? '<button type="button" id="wvoorlees">' + (speechSynthesis.speaking ? '⏹ Stop voorlezen' : '🔊 Voorlezen') + '</button>' : '') + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button>' + (s.slug ? '<a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' : '') + eikKnop(s.eik) + '</div>';
+      '<div class="d-acties">' + (pos && !pos.hand ? '<button type="button" data-kal="' + s.lat + ',' + s.lon + '" data-kalnaam="stop ' + (i + 1) + '" title="Klopt de blauwe bol niet met de kaart? Tik hier als je bij deze stop staat.">📍 Ik sta bij deze stop</button>' : '') + (window.speechSynthesis ? '<button type="button" id="wvoorlees">' + (speechSynthesis.speaking ? '⏹ Stop voorlezen' : '🔊 Voorlezen') + '</button>' : '') + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button>' + (s.slug ? '<a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' : '') + eikKnop(s.eik) + '</div>';
     if ($('wvoorlees')) $('wvoorlees').onclick = function () {
       if (speechSynthesis.speaking) { speechSynthesis.cancel(); leestSinds = 0; this.textContent = '🔊 Voorlezen'; return; }
       leesVoor(stopTekstLang(s, i), true); this.textContent = '⏹ Stop voorlezen';
@@ -607,6 +614,20 @@
     }).catch(function () { knop.disabled = false; knop.textContent = 'Pakket (zip)'; $('opstat').textContent = 'Het pakket kon niet gemaakt worden.'; });
   }
   function dlBlob(f) { var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+
+  // ------------------------------------------------------------ GPS bijstellen ("ik sta hier bij stop 7")
+  // Onder bomen wijkt de GPS vaak 10 à 30 m af in dezelfde richting. Sta je bij een gekende stop of boom, dan verschuift de
+  // bijstelling alle volgende GPS-posities met dat verschil (tot 20 minuten of 400 m verder).
+  var KAL = null;
+  function kalibreer(lat, lon, naam) {
+    if (!pos || pos.hand || !pos.ruw) { melding('Zet eerst de GPS aan (Waar ben ik?).'); return; }
+    var d = afstand(pos.ruw, [lat, lon]);
+    if (d > 80) { melding('De GPS zegt dat je ' + fmtM(d) + ' van ' + esc(naam) + ' bent. Dat is te ver om bij te stellen: kijk of je bij de juiste stop of boom staat.'); return; }
+    KAL = { dlat: lat - pos.ruw[0], dlon: lon - pos.ruw[1], t: Date.now(), ruw: pos.ruw };
+    nieuwePos({ coords: { latitude: pos.ruw[0], longitude: pos.ruw[1], accuracy: pos.acc } }, false);
+    map.setView([lat, lon], Math.max(map.getZoom(), 18));
+    melding('GPS bijgesteld met ' + fmtM(d) + ': je staat nu bij ' + esc(naam) + '. <button type="button" class="sec" data-kalweg="1">Ongedaan maken</button>');
+  }
 
   // ------------------------------------------------------------ looprichting: pijl bij je positie en kaart die meedraait
   // Richting: tijdens het wandelen de bewegingsrichting (GPS-koers of de laatste meters), stilstaand het kompas van de gsm (als dat er is).
