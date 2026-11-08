@@ -450,3 +450,8 @@ h2[id]{scroll-margin-top:4.5rem}
 #boomplus h2{margin:.1rem 0 .3rem;font-size:1.1rem}#boomplus label{display:block;margin:.35rem 0}#boomplus input{width:100%;box-sizing:border-box;padding:.35rem;font-size:1rem}
 
 .bank span{font-size:15px;line-height:20px;display:block;text-align:center;background:#fff;border:1px solid #8d6e63;border-radius:4px;width:18px;height:18px}
+
+/* paden opnemen en wachtende gegevens */
+#padopname{border:2px solid #e65100}#padopname label{display:block;margin:.35rem 0}#padopname input,#padopname select{width:100%;box-sizing:border-box;padding:.35rem;font-size:1rem}
+.syncinfo{background:#fff8e1;border:1px solid #f0c36d;padding:.4rem .6rem;border-radius:6px;margin:.4rem 0;font-size:.9rem}
+.rood{color:#c62828}

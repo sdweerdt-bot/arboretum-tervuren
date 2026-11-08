@@ -64,6 +64,9 @@
     $('waar').addEventListener('click', wisselGps);
     if ($('boomplusknop')) $('boomplusknop').addEventListener('click', boomPlus);
     draaiInit();
+    if ($('padknop')) $('padknop').addEventListener('click', padStart);
+    var bezig = lees('arb-pad-bezig', null); if (bezig && bezig.pts) { PAD = bezig; if (PAD.pts.length) padLijn = L.polyline(PAD.pts, { color: '#e65100', weight: 5, dashArray: '8 6' }).addTo(map); toonPadPaneel(); melding('Je was een pad aan het opnemen: de opname loopt verder. Zet de GPS aan.'); }
+    window.addEventListener('online', synchroniseer); setTimeout(synchroniseer, 1500);
     if ($('bankplusknop')) $('bankplusknop').addEventListener('click', bankPlus);
     document.querySelectorAll('.straal button').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -79,6 +82,11 @@
       if (t) { e.preventDefault(); markeerTaxon(t.dataset.toon); }
       var k = e.target.closest('[data-kal]');
       if (k) { var q = k.dataset.kal.split(','); map.closePopup(); kalibreer(+q[0], +q[1], k.dataset.kalnaam || 'deze plek'); }
+      var pw = e.target.closest('[data-padweg]');
+      if (pw) { var c = map.closePopup() && null; var ll2 = (pw.dataset.padweg || '').split(','); var x = { lat: +ll2[0], lon: +ll2[1], datum: new Date().toISOString().slice(0, 10) };
+        if (pos && !pos.hand && afstand(pos.ll, [x.lat, x.lon]) < 60 && confirm('Gebruik je huidige plaats als plek waar het pad niet bestaat? (Annuleren = midden van het getekende pad)')) { x.lat = +pos.ll[0].toFixed(6); x.lon = +pos.ll[1].toFixed(6); }
+        var q2 = lees('arb-padwegwachtrij', []); q2.push(x); schrijf('arb-padwegwachtrij', q2); L.circleMarker([x.lat, x.lon], { radius: 8, color: '#c62828', weight: 3, fill: false }).addTo(lagen.paden);
+        melding('Gemeld: hier bestaat het pad niet. Ik haal het weg bij de volgende verwerking.'); synchroniseer(); }
       if (e.target.closest('[data-kalweg]')) { KAL = null; if (pos && pos.ruw) nieuwePos({ coords: { latitude: pos.ruw[0], longitude: pos.ruw[1], accuracy: pos.acc } }, false); melding('Bijstelling ongedaan gemaakt.'); }
     });
     zoekInit(); opnameInit();
@@ -129,8 +137,8 @@
     });
     L.marker([50.81106, 4.50663], { icon: L.divIcon({ className: 'parkingP', html: 'P', iconSize: [24, 24], iconAnchor: [12, 12] }) }).bindPopup('<b>Parking Eikestraat</b><br>De wandelingen starten en eindigen enkele meters verder, aan de slagboom bij het begin van de beukendreef.').addTo(lagen.groepen);
     D.paden.forEach(function (p) {
-      if (p.b) { L.polyline(p.p, { color: '#a89f8c', weight: 8, opacity: 0.9, interactive: false }).addTo(lagen.paden); L.polyline(p.p, { color: '#ffffff', weight: 5, opacity: 1, interactive: false }).addTo(lagen.paden); }
-      else L.polyline(p.p, { color: '#6b4423', weight: 2.5, opacity: 0.95, interactive: false }).addTo(lagen.paden);
+      if (p.b) { L.polyline(p.p, { color: '#a89f8c', weight: 8, opacity: 0.9, interactive: false }).addTo(lagen.paden); L.polyline(p.p, { color: '#ffffff', weight: 5, opacity: 1 }).bindPopup(padPopup).addTo(lagen.paden); }
+      else L.polyline(p.p, { color: p.e ? '#e65100' : '#6b4423', weight: p.e ? 3.5 : 2.5, opacity: 0.95 }).bindPopup(padPopup).addTo(lagen.paden);
     });
     D.reeksen.forEach(function (r, i) {
       var t = D.taxa[r[0]], dy = r[5] / (RAD * R), dx = r[4] / (RAD * R * Math.cos(r[2] * RAD));
@@ -229,6 +237,7 @@
       else { var c = L.latLngBounds(D.bounds).getCenter(); melding('Je bent ongeveer ' + fmtM(afstand(pos.ll, [c.lat, c.lng])) + ' van het arboretum.'); }
     }
     if (opname && !handmatig) opnamePunt();
+    if (PAD && !handmatig) padPunt();
     dichtbij(); wandelingVolg(); navigatie();
   }
 
@@ -689,6 +698,74 @@
     $('map').addEventListener('pointerdown', function () { if (draai.aan) { zetDraai(false); melding('Kaart staat weer met het noorden boven. Tik op 🧭 om ze opnieuw te laten meedraaien.'); setTimeout(function () { melding(''); }, 4000); } }, true);
   }
 
+  // ------------------------------------------------------------ paden opnemen (werkt zonder internet)
+  // Neem een pad op door het af te wandelen: punten om de 4 m (alleen als de GPS nauwkeuriger is dan 25 m). Alles blijft op de gsm
+  // (localStorage) en wordt opgeladen naar data/eigen_paden.json zodra er internet is en de GitHub-sleutel op het toestel staat.
+  var PAD = null, padLijn = null;
+  function padPopup(l) {
+    var ll = l.getCenter ? l.getCenter() : null;
+    return '<b>Pad</b><div class="pk"><button class="sec" type="button" data-padweg="' + (ll ? ll.lat.toFixed(6) + ',' + ll.lng.toFixed(6) : '') + '">Dit pad bestaat niet (meer)</button></div><p class="muted">Tik eerst zo dicht mogelijk bij de plek waar het pad niet klopt.</p>';
+  }
+  function padStart() {
+    if (PAD) return;
+    if (watchId === null) wisselGps();
+    PAD = { id: Date.now(), soort: 'klein', pts: [], start: new Date().toISOString() };
+    schrijf('arb-pad-bezig', PAD);
+    if (navigator.wakeLock && !wakeLock) navigator.wakeLock.request('screen').then(function (w) { wakeLock = w; }).catch(function () {});
+    toonPadPaneel();
+  }
+  function padPunt() {
+    if (!PAD || !pos || pos.hand || pos.acc > 25) return;
+    var l = PAD.pts[PAD.pts.length - 1];
+    if (l && afstand(l, pos.ll) < 4) return;
+    PAD.pts.push([+pos.ll[0].toFixed(6), +pos.ll[1].toFixed(6)]);
+    schrijf('arb-pad-bezig', PAD);
+    if (!padLijn) padLijn = L.polyline(PAD.pts, { color: '#e65100', weight: 5, dashArray: '8 6' }).addTo(map); else padLijn.setLatLngs(PAD.pts);
+    toonPadPaneel();
+  }
+  function padLengte(pts) { var m = 0; for (var i = 1; i < pts.length; i++) m += afstand(pts[i - 1], pts[i]); return m; }
+  function toonPadPaneel() {
+    var el = $('padopname'); if (!el) return;
+    if (!PAD) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = '<h2>〰️ Pad opnemen</h2><p>Wandel het pad af. <b>' + PAD.pts.length + '</b> punten · ' + fmtM(padLengte(PAD.pts)) + (pos && pos.acc > 25 ? ' · <span class="rood">GPS te onnauwkeurig (± ' + Math.round(pos.acc) + ' m), even wachten</span>' : '') + '</p>' +
+      '<p class="muted">Werkt zonder internet. Laat het scherm aan (anders stopt de GPS). Begin en eindig op een bestaand pad of kruispunt.</p>' +
+      '<label>Soort pad <select id="pad-soort"><option value="klein">klein pad / bospad</option><option value="groot">groot pad / dreef</option><option value="weide">pad over of langs een weide</option><option value="trap">trap of steil pad</option></select></label>' +
+      '<label>Opmerking <input id="pad-opm" placeholder="bv. modderig na regen"></label>' +
+      '<div class="d-acties"><button type="button" class="knop hoofd" id="pad-ok">Stop en bewaar</button><button type="button" id="pad-weg">Annuleren</button></div>';
+    $('pad-soort').value = PAD.soort || 'klein'; $('pad-soort').onchange = function () { PAD.soort = this.value; schrijf('arb-pad-bezig', PAD); };
+    if (PAD.opm) $('pad-opm').value = PAD.opm; $('pad-opm').onchange = function () { PAD.opm = this.value; schrijf('arb-pad-bezig', PAD); };
+    $('pad-weg').onclick = function () { if (PAD.pts.length > 5 && !confirm('Dit opgenomen pad weggooien?')) return; padStop(); };
+    $('pad-ok').onclick = function () {
+      if (PAD.pts.length < 3 || padLengte(PAD.pts) < 10) { melding('Het pad is nog te kort om te bewaren.'); return; }
+      var p = { id: PAD.id, soort: PAD.soort, opm: PAD.opm || '', datum: PAD.start.slice(0, 10), pts: PAD.pts };
+      var q = lees('arb-padwachtrij', []); q.push(p); schrijf('arb-padwachtrij', q);
+      L.polyline(p.pts, { color: '#e65100', weight: 3.5 }).bindPopup('<b>Eigen pad</b> (nog niet opgeladen)').addTo(lagen.paden);
+      padStop(); melding('Pad bewaard op dit toestel (' + fmtM(padLengte(p.pts)) + ').'); synchroniseer();
+    };
+  }
+  function padStop() { PAD = null; localStorage.removeItem('arb-pad-bezig'); if (padLijn) { map.removeLayer(padLijn); padLijn = null; } if (wakeLock && !opname) { wakeLock.release().catch(function () {}); wakeLock = null; } toonPadPaneel(); }
+
+  // ------------------------------------------------------------ wachtende gegevens opladen zodra er internet is
+  var SYNC = [['arb-boomwachtrij', 'data/extra_bomen.json', 'boom'], ['arb-bankwachtrij', 'data/zitbanken_extra.json', 'zitbank'], ['arb-padwachtrij', 'data/eigen_paden.json', 'pad'], ['arb-padwegwachtrij', 'data/paden_weg.json', 'melding van een pad dat niet bestaat']];
+  var bezigSync = false;
+  function wachtend() { return SYNC.reduce(function (n, s) { return n + lees(s[0], []).length; }, 0); }
+  function synchroniseer() {
+    var n = wachtend(), k = $('syncinfo');
+    if (k) { k.hidden = !n; k.innerHTML = n ? '⏳ ' + n + ' gegeven' + (n > 1 ? 's' : '') + ' wacht' + (n > 1 ? 'en' : '') + ' op opladen' + (lees('arb-gh-token', '') ? (navigator.onLine === false ? ' (geen internet)' : '') : ' (geen GitHub-sleutel op dit toestel: open de beheerpagina)') : ''; }
+    if (!n || bezigSync || !lees('arb-gh-token', '') || navigator.onLine === false) return;
+    bezigSync = true; var ok = 0;
+    SYNC.reduce(function (p, s) {
+      return p.then(function () {
+        var q = lees(s[0], []);
+        return q.reduce(function (pp, item) {
+          return pp.then(function () { return bewaarInRepo(s[1], item, 'Ter plaatse: ' + s[2] + ' toegevoegd').then(function () { var r = lees(s[0], []).filter(function (x) { return JSON.stringify(x) !== JSON.stringify(item); }); schrijf(s[0], r); ok++; }); });
+        }, Promise.resolve());
+      });
+    }, Promise.resolve()).then(function () { bezigSync = false; if (ok) melding('✓ ' + ok + ' wachtend' + (ok > 1 ? 'e gegevens' : ' gegeven') + ' opgeladen. Binnen een à twee minuten staan ze online.'); synchroniseer(); })
+      .catch(function () { bezigSync = false; var k2 = $('syncinfo'); if (k2) k2.innerHTML += ' · opladen lukte nog niet, later opnieuw'; });
+  }
+
   // ------------------------------------------------------------ zitbanken (OpenStreetMap + ter plaatse toegevoegd)
   var BANKEN = [];
   var BANKICOON = null;
@@ -791,9 +868,12 @@
   Promise.all([fetch(ROOT + 'data/arboretum.json').then(function (r) { return r.json(); }), fetch(ROOT + 'data/wandelingen.json').then(function (r) { return r.json(); }),
     fetch(ROOT + 'data/extra_bomen.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })])
     .then(function (x) {
-      D = x[0]; WAND = x[1]; (x[2] || []).forEach(voegExtraToe);
+      D = x[0]; WAND = x[1]; (x[2] || []).concat(lees('arb-boomwachtrij', [])).forEach(voegExtraToe);
+      fetch(ROOT + 'data/eigen_paden.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (ep) {
+        var w2 = setInterval(function () { if (lagen.paden) { clearInterval(w2); ep.concat(lees('arb-padwachtrij', [])).forEach(function (p) { L.polyline(p.pts, { color: '#e65100', weight: 3.5, opacity: 0.95 }).bindPopup('<b>Eigen pad</b> · ' + esc(p.soort || '') + (p.opm ? '<br>' + esc(p.opm) : '') + '<br><span class="muted">opgenomen ' + esc(p.datum || '') + '</span>').addTo(lagen.paden); }); } }, 200);
+      });
       Promise.all(['zitbanken.json', 'zitbanken_extra.json'].map(function (f) { return fetch(ROOT + 'data/' + f, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }); }))
-        .then(function (z) { BANKEN = z[0].concat(z[1]); var w = setInterval(function () { if (lagen.banken) { clearInterval(w); BANKEN.forEach(toonBank); } }, 200); });
+        .then(function (z) { BANKEN = z[0].concat(z[1], lees('arb-bankwachtrij', [])); var w = setInterval(function () { if (lagen.banken) { clearInterval(w); BANKEN.forEach(toonBank); } }, 200); });
       if (window.L && L.map) start(); else window.addEventListener('leaflet-klaar', start, { once: true });
     }).catch(function () { melding('De kaartgegevens konden niet geladen worden.'); });
 })();
