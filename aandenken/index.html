@@ -9,7 +9,7 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icoon-192.png">
 <link rel="apple-touch-icon" href="../icoon-192.png">
-<link rel="stylesheet" href="../css/site.css?v=29dc43d4">
+<link rel="stylesheet" href="../css/site.css?v=63fc8f19">
 
 </head>
 <body data-root="../" class="">
@@ -60,7 +60,7 @@ function teken(){
     var str=(String(s.g||'').match(/^\d+/)||[''])[0], streek=H[str]?H[str].split(',')[0]:'';
     var tv=[];if(s.g)tv.push('groep '+esc(s.g)+(streek?' ('+esc(streek)+')':''));if(s.j)tv.push('geplant '+s.j);if(s.om>20)tv.push('omtrek '+s.om+' cm');
     h+='<div class="bwijzer">'+
-      (f?'<figure class="bwfoto"><img src="'+esc(f.u)+'" alt="'+esc(KL[f.k])+' van '+esc(b.nl||s.n)+'" loading="eager"><figcaption>'+esc(KL[f.k])+'</figcaption></figure>':'<div class="bwtop">'+SV[BL[i%4]]+'</div>')+
+      (f?'<figure class="bwfoto"><img src="'+esc(f.u)+'" alt="'+esc(KL[f.k])+' van '+esc(b.nl||s.n)+'" loading="eager"><figcaption>'+esc(KL[f.k])+'</figcaption></figure>':'<div class="bwtop">'+SV[/^Quercus/.test(s.n)?'eik':/^Ginkgo/.test(s.n)?'ginkgo':/^Acer/.test(s.n)?'esdoorn':b.naald?'naald':'eik']+'</div>')+
       '<p class="bwnaam">'+esc(b.nl||s.nl||s.titel)+'</p><p class="bwlat">'+esc(s.n)+'</p>'+(b.fam?'<p class="bwfam">familie '+esc(b.fam)+'</p>':'')+
       (fi.length?'<dl class="bwfiche"><dt>Thuis in</dt><dd>'+esc(fi[0])+'</dd><dt>Hoogte</dt><dd>'+esc(fi[1])+'</dd><dt>Blad</dt><dd>'+esc(fi[2])+'</dd><dt>Vrucht</dt><dd>'+esc(fi[3])+'</dd><dt>Schors</dt><dd>'+esc(fi[4])+'</dd></dl>':'')+
       (tv.length?'<p class="bwtv"><b>In Tervuren:</b> '+tv.join(' · ')+'</p>':'')+

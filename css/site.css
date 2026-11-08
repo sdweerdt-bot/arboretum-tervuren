@@ -345,9 +345,9 @@ main.aand{max-width:none}
 .bwfoto{margin:0 0 .15cm;width:4.5cm;position:relative}.bwfoto img{width:4.5cm;height:4.2cm;object-fit:cover;display:block;border:1px solid #c9b98f}
 .bwfoto figcaption{position:absolute;left:0;bottom:0;background:rgba(44,42,34,.75);color:#fff;font:italic .62rem Georgia,serif;padding:.05cm .15cm}
 .bwnaam{font-weight:bold;font-size:.95rem;margin:.1cm 0 0;line-height:1.15}.bwlat{font-style:italic;font-size:.75rem;margin:0;color:#444}.bwfam{font-size:.62rem;margin:0 0 .12cm;color:#6b5a2c;font-variant:small-caps;letter-spacing:.04em}
-.bwfiche{font-size:.6rem;line-height:1.25;text-align:left;margin:0 0 .12cm;width:100%}.bwfiche dt{font-weight:bold;color:#6b5a2c;float:left;clear:left;width:1.05cm}.bwfiche dd{margin:0 0 .05cm 1.1cm}
-.bwtv{font-size:.6rem;line-height:1.25;margin:0 0 .12cm;text-align:left;width:100%}
-.bwijzer .bwweet{font-size:.68rem;line-height:1.3;text-align:left}.bwijzer .bwweet span{margin-bottom:.05cm}
+.bwfiche{font-size:.68rem;line-height:1.25;text-align:left;margin:0 0 .12cm;width:100%}.bwfiche dt{font-weight:bold;color:#6b5a2c;float:left;clear:left;width:1.3cm}.bwfiche dd{margin:0 0 .06cm 1.35cm}
+.bwtv{font-size:.66rem;line-height:1.25;margin:0 0 .12cm;text-align:left;width:100%}
+.bwijzer .bwweet{font-size:.76rem;line-height:1.3;text-align:left}.bwijzer .bwweet span{margin-bottom:.05cm}
 .bwcred{font-size:.5rem;color:#8a7a50}
 .bwweet span{display:block;font-style:italic;color:#6b5a2c;margin-bottom:.15cm}
 .bwboom{font-size:.75rem;font-style:italic;color:#555;margin:.2cm 0}
