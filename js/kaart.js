@@ -82,6 +82,10 @@
       if (t) { e.preventDefault(); markeerTaxon(t.dataset.toon); }
       var k = e.target.closest('[data-kal]');
       if (k) { var q = k.dataset.kal.split(','); map.closePopup(); kalibreer(+q[0], +q[1], k.dataset.kalnaam || 'deze plek'); }
+      var po = e.target.closest('[data-padopnieuw]');
+      if (po) { var lg = PADLAGEN[+po.dataset.padopnieuw]; map.closePopup(); if (PAD && PAD.pts.length > 5 && !confirm('Er loopt al een padopname. Dit pad als te vervangen aanduiden bij die opname?')) return;
+        padStart(); if (lg && padGekozen.indexOf(lg) < 0) { lg.oudeKleur = lg.options.color; padGekozen.push(lg); lg.setStyle({ color: '#c62828', dashArray: '4 6' }); PAD.vervangt = padGekozen.map(function (x) { return x.padPts; }); schrijf('arb-pad-bezig', PAD); }
+        toonPadPaneel(); $('padopname').scrollIntoView({ behavior: 'smooth', block: 'center' }); melding('Opname gestart: wandel het pad zoals het nu loopt. Het oude pad (rood gestreept) wordt vervangen.'); }
       var pw = e.target.closest('[data-padweg]');
       if (pw) { var c = map.closePopup() && null; var ll2 = (pw.dataset.padweg || '').split(','); var x = { lat: +ll2[0], lon: +ll2[1], datum: new Date().toISOString().slice(0, 10) };
         if (pos && !pos.hand && afstand(pos.ll, [x.lat, x.lon]) < 60 && confirm('Gebruik je huidige plaats als plek waar het pad niet bestaat? (Annuleren = midden van het getekende pad)')) { x.lat = +pos.ll[0].toFixed(6); x.lon = +pos.ll[1].toFixed(6); }
@@ -744,9 +748,10 @@
   // Neem een pad op door het af te wandelen: punten om de 4 m (alleen als de GPS nauwkeuriger is dan 25 m). Alles blijft op de gsm
   // (localStorage) en wordt opgeladen naar data/eigen_paden.json zodra er internet is en de GitHub-sleutel op het toestel staat.
   var PAD = null, padLijn = null;
+  var PADLAGEN = [];
   function padPopup(l) {
-    var ll = l.getCenter ? l.getCenter() : null;
-    return '<b>Pad</b><div class="pk"><button class="sec" type="button" data-padweg="' + (ll ? ll.lat.toFixed(6) + ',' + ll.lng.toFixed(6) : '') + '">Dit pad bestaat niet (meer)</button></div><p class="muted">Tik eerst zo dicht mogelijk bij de plek waar het pad niet klopt.</p>';
+    var ll = l.getCenter ? l.getCenter() : null, k = PADLAGEN.indexOf(l); if (k < 0) { PADLAGEN.push(l); k = PADLAGEN.length - 1; }
+    return '<b>Pad</b><div class="pk">' + (l.padPts ? '<button class="sec" type="button" data-padopnieuw="' + k + '">〰️ Dit pad opnieuw opnemen</button>' : '') + '<button class="sec" type="button" data-padweg="' + (ll ? ll.lat.toFixed(6) + ',' + ll.lng.toFixed(6) : '') + '">Dit pad bestaat niet (meer)</button></div><p class="muted">Opnieuw opnemen: wandel het pad zoals het nu loopt; het oude (rood gestreept) verdwijnt bij het bewaren. Bestaat het hier niet: tik eerst zo dicht mogelijk bij die plek.</p>';
   }
   // bestaand(e) pad(en) aanduiden die door het nieuwe pad vervangen worden
   var padKies = false, padGekozen = [];
