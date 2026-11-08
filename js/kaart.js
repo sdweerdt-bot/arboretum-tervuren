@@ -191,6 +191,7 @@
     }
     if (!navigator.geolocation) { melding('Dit toestel of deze browser geeft geen locatie. Vink <b>Tik zelf op de kaart</b> aan.'); $('handmatigrij').hidden = false; return; }
     b.classList.add('aan'); b.textContent = 'GPS zoekt…'; eersteFix = true;
+    if ($('wspraak') && $('wspraak').checked && window.speechSynthesis && wand) { var u0 = new SpeechSynthesisUtterance('GPS staat aan'); u0.lang = 'nl-BE'; speechSynthesis.speak(u0); }   // een eerste zin bij een tik zet het geluid vrij op gsm
     watchId = navigator.geolocation.watchPosition(function (p) { nieuwePos(p, false); }, function (err) {
       if (err.code === 1) {
         b.classList.remove('aan'); b.textContent = 'Waar ben ik?';
@@ -268,9 +269,17 @@
     $('woverzicht').href = ROOT + 'wandeling/?w=' + wand.id;
     $('wtitel').textContent = wand.titel;
     $('wmeta').textContent = 'Start en einde: ' + wand.start.naam + ' · ' + wand.stops.length + ' stops · ongeveer ' + fmtM(wand.lengte) + ' · ' + wand.seizoen;
-    $('wvorige').onclick = function () { wand.manueel = Math.max(0, volgendeIndex() - 1); wand.gezien = wand.gezien.filter(function (i) { return i < wand.manueel; }); bewaarGezien(); wandelingVolg(); };
-    $('wvolgende').onclick = function () { var i = volgendeIndex(); if (wand.gezien.indexOf(i) < 0) wand.gezien.push(i); bewaarGezien(); wandelingVolg(); };
-    $('wreset').onclick = function () { wand.gezien = []; bewaarGezien(); wandelingVolg(); };
+    wand.toon = null; wand.bij = null; wand.vast = null;
+    var sp = $('wspraak');
+    if (sp && !sp.dataset.klaar) {
+      sp.dataset.klaar = 1; sp.checked = lees('arb-spraak', true);
+      sp.onchange = function () { schrijf('arb-spraak', sp.checked); if (sp.checked && window.speechSynthesis) { var u = new SpeechSynthesisUtterance('Gesproken aanwijzingen staan aan'); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u); } };
+    }
+    $('wvorige').onclick = function () { var i = huidigeStop(); wand.toon = Math.max(0, i - 1); wand.vast = pos ? pos.ll : [0, 0]; wandelingVolg(); };
+    $('wvolgende').onclick = function () { var i = huidigeStop(); if (wand.gezien.indexOf(i) < 0 && i < wand.stops.length) { wand.gezien.push(i); bewaarGezien(); } wand.toon = Math.min(wand.stops.length, i + 1); wand.vast = pos ? pos.ll : [0, 0]; wandelingVolg(); };
+    $('wreset').onclick = function () { wand.gezien = []; wand.toon = null; wand.bij = null; wand.vast = null; bewaarGezien(); wandelingVolg(); };
+    if ($('wfoto')) $('wfoto').onchange = function () { var fi = this; if (!fi.files || !fi.files[0]) return; var f = fi.files[0], k = +fi.dataset.stop; fi.value = ''; wand.toon = k; wand.vast = pos ? pos.ll : [0, 0]; window.ARB_FOTO_VERWERK(wand, k, f, $('wfotostatus')); };
+    $('wlijst').onclick = function (e) { var b = e.target.closest('[data-stop]'); if (!b) return; wand.toon = +b.dataset.stop; wand.vast = pos ? pos.ll : [0, 0]; wandelingVolg(); };
     wandelingVolg();
   }
   function bewaarGezien() { schrijf('arb-wand-' + wand.id, wand.gezien); }
@@ -317,28 +326,52 @@
     for (i = 0; i < wand.afslagen.length; i++) { var sa = wand.cum[wand.afslagen[i][3]]; if (sa >= p.s - 8) { a = wand.afslagen[i]; break; } }
     if (!a) { el.hidden = true; return; }
     var rest = Math.max(0, wand.cum[a[3]] - p.s);
-    if (rest > 70) { el.hidden = false; el.className = 'wnav ver'; el.innerHTML = '<span class="pijl">⬆</span><span>Volg het pad nog ' + fmtM(Math.round(rest / 10) * 10) + '</span>'; return; }
+    if (rest > 70) {
+      el.hidden = false; el.className = 'wnav ver'; el.innerHTML = '<span class="pijl">⬆</span><span>Volg het pad nog ' + fmtM(Math.round(rest / 10) * 10) + '</span>';
+      // uitspreken: één keer per stuk pad, als de volgende aanwijzing verandert (na een kruispunt of bij de start)
+      if (!wand.gemeld['v' + a[3]]) { wand.gemeld['v' + a[3]] = 1; zeg('Volg het pad nog ' + (Math.round(rest / 10) * 10) + ' meter'); }
+      return;
+    }
     var t = AFSLAG[a[2]] || AFSLAG.r, m = Math.max(5, Math.round(rest / 5) * 5);
     el.hidden = false; el.className = 'wnav' + (rest <= 25 ? ' nu' : '');
     el.innerHTML = '<span class="pijl">' + t[0] + '</span><span>' + (rest <= 8 ? 'Nu: ' : 'Over ' + m + ' m: ') + '<b>' + t[1] + '</b></span>';
     var sl = a[3];
+    wand.gemeld['v' + sl] = 1;
+    if (rest > 25 && !wand.gemeld['70-' + sl]) { wand.gemeld['70-' + sl] = 1; zeg('Over ' + m + ' meter ' + t[1]); }
     if (rest <= 25 && !wand.gemeld[sl]) {
-      wand.gemeld[sl] = 1;
+      wand.gemeld[sl] = 1; wand.gemeld['70-' + sl] = 1;
       if (navigator.vibrate) navigator.vibrate(a[2] === 'r' ? 80 : [120, 60, 120]);
-      if ($('wspraak') && $('wspraak').checked && window.speechSynthesis) { var u = new SpeechSynthesisUtterance((rest <= 8 ? 'Nu ' : 'Over ' + m + ' meter ') + t[1]); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+      zeg((rest <= 8 ? 'Nu ' : 'Over ' + m + ' meter ') + t[1]);
     }
   }
   function volgendeIndex() { for (var i = 0; i < wand.stops.length; i++) if (wand.gezien.indexOf(i) < 0) return i; return wand.stops.length; }
+  // welke stop tonen: een manueel gekozen stop (vorige/volgende/lijst) blijft staan tot je 60 m verder bent;
+  // kom je bij een stop aan, dan blijft die in beeld zolang je er binnen 45 m van bent; daarna de eerstvolgende niet bezochte stop.
+  function huidigeStop() { return wand.toon !== null && wand.toon !== undefined ? wand.toon : (wand.bij !== null && wand.bij !== undefined ? wand.bij : volgendeIndex()); }
+  function zeg(t) {
+    if (!($('wspraak') && $('wspraak').checked && window.speechSynthesis)) return;
+    var u = new SpeechSynthesisUtterance(t); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
   function wandelingVolg() {
     if (!wand) return;
-    if (pos && !pos.hand) wand.stops.forEach(function (s, i) {
-      if (wand.gezien.indexOf(i) < 0 && afstand(pos.ll, [s.lat, s.lon]) < Math.max(20, Math.min(pos.acc, 35))) { wand.gezien.push(i); bewaarGezien(); if (navigator.vibrate) navigator.vibrate([150, 80, 150]); }
-    });
-    var i = volgendeIndex(), el = $('wvolg');
+    if (pos && !pos.hand) {
+      var straal = Math.max(20, Math.min(pos.acc, 35));
+      if (wand.vast && afstand(pos.ll, wand.vast) > 60) { wand.vast = null; wand.toon = null; }
+      wand.stops.forEach(function (s, i) {
+        if (wand.gezien.indexOf(i) < 0 && afstand(pos.ll, [s.lat, s.lon]) < straal) {
+          wand.gezien.push(i); bewaarGezien(); wand.bij = i;
+          if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+          if (!wand.vast) zeg('Je bent bij stop ' + (i + 1) + ': ' + s.titel);
+        }
+      });
+      if (wand.bij !== null && wand.bij !== undefined && afstand(pos.ll, [wand.stops[wand.bij].lat, wand.stops[wand.bij].lon]) > 45) wand.bij = null;
+    }
+    var i = huidigeStop(), el = $('wvolg');
     $('wlijst').innerHTML = wand.stops.map(function (s, k) {
-      return '<li class="' + (wand.gezien.indexOf(k) >= 0 ? 'gezien' : '') + (k === i ? ' nu' : '') + '"><button type="button" data-ll="' + s.lat + ',' + s.lon + '">' + (k + 1) + '. ' + esc(s.titel) + '</button></li>';
+      return '<li class="' + (wand.gezien.indexOf(k) >= 0 ? 'gezien' : '') + (k === i ? ' nu' : '') + '"><button type="button" data-stop="' + k + '">' + (k + 1) + '. ' + esc(s.titel) + '</button></li>';
     }).join('');
     if (i >= wand.stops.length) {
+      if ($('wfotoblok')) $('wfotoblok').hidden = true;
       var st = [wand.start.lat, wand.start.lon];
       el.innerHTML = '<p class="vstop"><b>Alle ' + wand.stops.length + ' stops bezocht.</b> Terug naar het vertrekpunt, ' + esc(wand.start.naam) + '<br>' +
         (pos ? '<span class="groot">' + fmtM(afstand(pos.ll, st)) + ' ' + richting(pos.ll, st) + '</span>' : '') + '</p><div class="d-acties"><button type="button" data-ll="' + st.join(',') + '">Toon vertrekpunt</button></div>';
@@ -346,11 +379,13 @@
     }
     var s = wand.stops[i];
     var afst = pos ? '<span class="groot">' + fmtM(afstand(pos.ll, [s.lat, s.lon])) + ' ' + richting(pos.ll, [s.lat, s.lon]) + '</span>' : '<span class="muted">Zet de GPS aan om de afstand te zien.</span>';
-    el.innerHTML = (s.hoofdstuk ? '<p class="hfst" style="--kl:' + wand.kleur + '">' + esc(s.hoofdstuk) + '</p>' : '') + '<p class="vstop">Stop ' + (i + 1) + ' van ' + wand.stops.length + ': <b>' + esc(s.titel) + '</b><br>' + afst + '</p>' +
+    el.innerHTML = (s.hoofdstuk ? '<p class="hfst" style="--kl:' + wand.kleur + '">' + esc(s.hoofdstuk) + '</p>' : '') + '<p class="vstop">' + (i === wand.bij ? '📍 Je bent bij stop ' : 'Stop ') + (i + 1) + ' van ' + wand.stops.length + ': <b>' + esc(s.titel) + '</b><br>' + (i === wand.bij ? '' : afst) + '</p>' +
       (s.n ? '<p>' + naamHtml(s.n) + (s.nl ? ' · ' + esc(s.nl) : '') + ' <span class="muted">(' + (s.soort === 'reeks' ? 'reeks' : 'boom') + ', groep ' + esc(s.g) + (s.j ? ', geplant ' + s.j : '') + (s.om ? ', omtrek ' + s.om + ' cm' : '') + ')</span></p>' : '<p class="muted">' + esc(s.plaats || '') + '</p>') +
       '<p class="tekst">' + esc(s.tekst) + '</p>' + (s.fotos && s.fotos.length ? '<div class="sfotos">' + s.fotos.map(function (f) { return '<figure><a href="' + ROOT + esc(f.src) + '" target="_blank"><img src="' + ROOT + esc(f.src) + '" alt="" loading="lazy"></a>' + (f.bijschrift ? '<figcaption>' + esc(f.bijschrift) + '</figcaption>' : '') + '</figure>'; }).join('') + '</div>' : '') +
       (s.weetje ? '<div class="gb weetje"><b>Weetje</b><p>' + esc(s.weetje) + '</p></div>' : '') +
       '<div class="d-acties">' + (s.verhaal ? '<a class="kn" href="' + ROOT + 'wandeling/?w=' + wand.id + '#stop-' + (i + 1) + '">Gidstekst</a>' : '') + '<button type="button" data-ll="' + s.lat + ',' + s.lon + '">Toon op kaart</button>' + (s.slug ? '<a class="kn" href="' + fiche(s.slug) + '?w=' + wand.id + '&s=' + i + '&van=kaart">Plantenfiche</a>' : '') + eikKnop(s.eik) + '</div>';
+    var fb = $('wfotoblok');
+    if (fb && window.ARB_FOTO_VERWERK) { fb.hidden = false; if ($('wfoto').dataset.stop !== String(i)) { $('wfoto').dataset.stop = i; $('wfotostatus').innerHTML = ''; } $('wfotolabel').textContent = '📷 Foto nemen of kiezen bij stop ' + (i + 1); }
   }
 
   // ------------------------------------------------------------ zelf een wandeling opnemen
