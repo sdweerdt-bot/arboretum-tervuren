@@ -463,3 +463,5 @@ h2[id]{scroll-margin-top:4.5rem}
 .thema-lijst .ta{min-width:4.5em;font-size:.85rem;color:#555}.thema-lijst .tk{margin-left:auto;display:flex;gap:.3rem}
 
 .padvervang{margin:.4rem 0}
+
+.horeca span{font-size:15px;line-height:22px;display:block;text-align:center;background:#fff8e1;border:1px solid #e65100;border-radius:50%;width:22px;height:22px}

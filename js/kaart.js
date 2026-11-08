@@ -59,7 +59,7 @@
     }).addTo(map);
     map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
     map.fitBounds(D.bounds, { padding: [8, 8] });
-    ['groepen', 'paden', 'reeksen', 'bomen', 'banken', 'opname', 'wand', 'sel'].forEach(function (k) { lagen[k] = L.layerGroup().addTo(map); });
+    ['groepen', 'paden', 'reeksen', 'bomen', 'banken', 'horeca', 'opname', 'wand', 'sel'].forEach(function (k) { lagen[k] = L.layerGroup().addTo(map); });
     tekenBasis();
     $('waar').addEventListener('click', wisselGps);
     if ($('boomplusknop')) $('boomplusknop').addEventListener('click', boomPlus);
@@ -827,6 +827,25 @@
       .catch(function () { bezigSync = false; var k2 = $('syncinfo'); if (k2) k2.innerHTML += ' · opladen lukte nog niet, later opnieuw'; });
   }
 
+  // ------------------------------------------------------------ eten en drinken in de buurt (OpenStreetMap, opgehaald 8/11/2026)
+  var SOORT_H = { restaurant: ['🍴', 'restaurant'], cafe: ['☕', 'café / tearoom'], bar: ['🍷', 'bar'], pub: ['🍺', 'café'], fast_food: ['🥪', 'snack / broodjes'], ice_cream: ['🍦', 'ijssalon'] };
+  var KEUKEN = { italian: 'Italiaans', italian_pizza: 'pizza', pizza: 'pizza', chinese: 'Chinees', japanese: 'Japans', thai: 'Thais', greek: 'Grieks', lebanese: 'Libanees', mediterranean: 'mediterraan', moroccan: 'Marokkaans', tunisian: 'Tunesisch', belgian: 'Belgisch', french: 'Frans', burger: 'burgers', friture: 'frituur', sandwich: 'broodjes', salad: 'salades', coffee_shop: 'koffie', ice_cream: 'ijs', tearoom: 'tearoom', bistro: 'bistro', local: 'lokaal', kebab: 'kebab' };
+  var DAG = { Mo: 'ma', Tu: 'di', We: 'wo', Th: 'do', Fr: 'vr', Sa: 'za', Su: 'zo', off: 'gesloten' };
+  function urenNl(t) { return String(t || '').replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|off)\b/g, function (m) { return DAG[m]; }); }
+  function toonHoreca(x) {
+    var s = SOORT_H[x.a] || ['🍴', 'eetgelegenheid'];
+    var ic = L.divIcon({ className: 'horeca', html: '<span>' + s[0] + '</span>', iconSize: [24, 24], iconAnchor: [12, 12] });
+    var k = (x.c || '').split(';').map(function (c) { return KEUKEN[c] || c; }).filter(Boolean).join(', ');
+    var tel = (x.tel || '').replace(/[^+\d]/g, '');
+    L.marker([x.lat, x.lon], { icon: ic, keyboard: false }).bindPopup('<b>' + esc(x.n) + '</b><br><span class="muted">' + esc(s[1]) + (k ? ' · ' + esc(k) : '') + (x.ter === 'yes' ? ' · terras' : '') + '</span>' +
+      (x.adr ? '<br>' + esc(x.adr) : '') + '<br>± ' + String(x.km).replace('.', ',') + ' km van de ' + esc(x.vanaf) + (x.oh ? '<br><span class="muted">Open: ' + esc(urenNl(x.oh)) + '</span>' : '') +
+      '<div class="pk">' + (x.w ? '<a href="' + esc(x.w) + '" target="_blank" rel="noopener">Website' + (x.a === 'restaurant' ? ' en reserveren' : '') + '</a> ' : '') +
+      (tel ? '<a href="tel:' + tel + '">📞 Bellen' + (x.a === 'restaurant' ? ' om te reserveren' : '') + '</a> ' : '') +
+      '<a href="https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=' + x.lat + ',' + x.lon + '" target="_blank" rel="noopener">Route</a> ' +
+      (!x.w ? '<a href="https://www.google.com/search?q=' + encodeURIComponent(x.n + ' ' + (x.adr || (x.buurt.indexOf('Jezus') === 0 ? 'Overijse' : 'Tervuren'))) + '" target="_blank" rel="noopener">Zoek info</a>' : '') + '</div>' +
+      '<p class="muted" style="font-size:.75rem">Gegevens: OpenStreetMap (8/11/2026); openingsuren kunnen gewijzigd zijn.</p>').addTo(lagen.horeca);
+  }
+
   // ------------------------------------------------------------ zitbanken (OpenStreetMap + ter plaatse toegevoegd)
   var BANKEN = [];
   var BANKICOON = null;
@@ -932,6 +951,9 @@
       D = x[0]; WAND = x[1]; (x[2] || []).concat(lees('arb-boomwachtrij', [])).forEach(voegExtraToe);
       fetch(ROOT + 'data/eigen_paden.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (ep) {
         var w2 = setInterval(function () { if (lagen.paden) { clearInterval(w2); ep.concat(lees('arb-padwachtrij', [])).forEach(function (p) { L.polyline(p.pts, { color: '#e65100', weight: 3.5, opacity: 0.95 }).bindPopup('<b>Eigen pad</b> · ' + esc(p.soort || '') + (p.opm ? '<br>' + esc(p.opm) : '') + '<br><span class="muted">opgenomen ' + esc(p.datum || '') + '</span>').addTo(lagen.paden); }); } }, 200);
+      });
+      fetch(ROOT + 'data/horeca.json').then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (h) {
+        var w3 = setInterval(function () { if (lagen.horeca) { clearInterval(w3); h.forEach(toonHoreca); } }, 200);
       });
       Promise.all(['zitbanken.json', 'zitbanken_extra.json'].map(function (f) { return fetch(ROOT + 'data/' + f, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }); }))
         .then(function (z) { BANKEN = z[0].concat(z[1], lees('arb-bankwachtrij', [])); var w = setInterval(function () { if (lagen.banken) { clearInterval(w); BANKEN.forEach(toonBank); } }, 200); });
