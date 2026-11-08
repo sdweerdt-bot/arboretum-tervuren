@@ -9,7 +9,7 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icoon-192.png">
 <link rel="apple-touch-icon" href="../icoon-192.png">
-<link rel="stylesheet" href="../css/site.css?v=a6464b18">
+<link rel="stylesheet" href="../css/site.css?v=29dc43d4">
 
 </head>
 <body data-root="../" class="">
@@ -25,7 +25,7 @@
 <label class="vink"><input type="checkbox" id="aleeg" checked> Lijn voor de naam op het certificaat leeg laten (invullen met de hand)</label>
 </div>
 <div class="knoppen"><button type="button" class="knop hoofd" onclick="window.print()">Afdrukken of opslaan als pdf</button><a class="knop" id="aterug" href="../wandelingen/">Terug naar de wandeling</a></div>
-<p class="muted">Drie soorten aandenken: <b>bladwijzers</b> met een weetje van onderweg, een <b>wereldreizigerscertificaat</b> met de streken die je vandaag "bezocht", en een <b>bladkaart</b> om thuis je mooiste blad op te plakken. Kies hieronder welke je afdrukt.</p>
+<p class="muted">Drie soorten aandenken: <b>bladwijzers</b>, één per boom van de wandeling, met een foto van blad, schors of vrucht, een korte botanische fiche en een weetje, een <b>wereldreizigerscertificaat</b> met de streken die je vandaag "bezocht", en een <b>bladkaart</b> om thuis je mooiste blad op te plakken. Kies hieronder welke je afdrukt.</p>
 <div class="aandkeuze"><label class="vink"><input type="checkbox" data-blok="bw" checked> Bladwijzers</label><label class="vink"><input type="checkbox" data-blok="cert" checked> Certificaten</label><label class="vink"><input type="checkbox" data-blok="bk" checked> Bladkaarten</label></div>
 </div>
 <section id="bw" class="vel bwvel"></section>
@@ -37,10 +37,10 @@ var SV={"ginkgo": "<svg class=\"blad\" viewBox=\"0 0 100 100\" aria-hidden=\"tru
 function $(i){return document.getElementById(i);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function zin(t){t=String(t||'').replace(/\s+/g,' ').trim();var m=t.match(/^.{30,170}?[.!?](\s|$)/);return m?m[0].trim():(t.length<=170?t:'');}
-var W=[],H={},q=new URLSearchParams(location.search);
+var W=[],H={},BW={},q=new URLSearchParams(location.search);
 $('ad').value=new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
-Promise.all([fetch('../data/wandelingen.json').then(function(r){return r.json();}),fetch('../data/arboretum.json').then(function(r){return r.json();})]).then(function(x){
-  W=x[0];H=x[1].hoofd||{};
+Promise.all([fetch('../data/wandelingen.json').then(function(r){return r.json();}),fetch('../data/arboretum.json').then(function(r){return r.json();}),fetch('../data/bladwijzer.json').then(function(r){return r.json();}).catch(function(){return {};})]).then(function(x){
+  W=x[0];H=x[1].hoofd||{};BW=x[2]||{};
   W.forEach(function(w){var o=document.createElement('option');o.value=w.id;o.textContent=w.titel;$('aw').appendChild(o);});
   if(q.get('w'))$('aw').value=q.get('w');
   ['aw','ad','an','aleeg'].forEach(function(i){$(i).addEventListener('input',teken);$(i).addEventListener('change',teken);});
@@ -51,14 +51,22 @@ function teken(){
   var w=W.filter(function(a){return a.id===$('aw').value;})[0]; if(!w)return;
   $('aterug').href='../wandeling/?w='+w.id;
   var dat=$('ad').value, km=((w.lengte||0)/1000).toFixed(1).replace('.',',');
-  // weetjes van onderweg
-  var wj=[];w.stops.forEach(function(s){var z=zin(s.weetje)||zin(s.kijk);if(z&&wj.indexOf(z)<0)wj.push({z:z,n:s.nl||s.titel||''});});
-  if(!wj.length)wj=[{z:'Hier staan bossen van vier continenten op een paar honderd meter van elkaar.',n:''}];
+  // bladwijzers: één per boom van de wandeling, met foto (blad, schors of vrucht), botanische fiche en een weetje
+  var KL={blad:'blad',schors:'schors',vrucht:'vrucht'}, bomen=[], gezien={};
+  w.stops.forEach(function(s){if(s.n&&!gezien[s.n]){gezien[s.n]=1;bomen.push(s);}});
   var n=+$('an').value,h='';
-  for(var i=0;i<n;i++){var x=wj[i%wj.length];
-    h+='<div class="bwijzer"><div class="bwtop">'+SV[BL[i%4]]+'</div><p class="bwkop">Een wereldreis rond bomen</p><p class="bwwand">'+esc(w.titel)+'</p>'+
-      '<p class="bwweet"><span>Wist je dat?</span>'+esc(x.z)+'</p>'+(x.n?'<p class="bwboom">'+esc(x.n)+'</p>':'')+
-      '<p class="bwvoet">Geografisch Arboretum Tervuren<br>'+esc(dat)+'</p></div>';}
+  for(var i=0;i<n&&bomen.length;i++){var s=bomen[i%bomen.length],b=BW[s.n]||{},f=b.f,fi=b.b||[];
+    var wj=zin(s.weetje)||zin(s.kijk)||zin(s.tekst);
+    var str=(String(s.g||'').match(/^\d+/)||[''])[0], streek=H[str]?H[str].split(',')[0]:'';
+    var tv=[];if(s.g)tv.push('groep '+esc(s.g)+(streek?' ('+esc(streek)+')':''));if(s.j)tv.push('geplant '+s.j);if(s.om>20)tv.push('omtrek '+s.om+' cm');
+    h+='<div class="bwijzer">'+
+      (f?'<figure class="bwfoto"><img src="'+esc(f.u)+'" alt="'+esc(KL[f.k])+' van '+esc(b.nl||s.n)+'" loading="eager"><figcaption>'+esc(KL[f.k])+'</figcaption></figure>':'<div class="bwtop">'+SV[BL[i%4]]+'</div>')+
+      '<p class="bwnaam">'+esc(b.nl||s.nl||s.titel)+'</p><p class="bwlat">'+esc(s.n)+'</p>'+(b.fam?'<p class="bwfam">familie '+esc(b.fam)+'</p>':'')+
+      (fi.length?'<dl class="bwfiche"><dt>Thuis in</dt><dd>'+esc(fi[0])+'</dd><dt>Hoogte</dt><dd>'+esc(fi[1])+'</dd><dt>Blad</dt><dd>'+esc(fi[2])+'</dd><dt>Vrucht</dt><dd>'+esc(fi[3])+'</dd><dt>Schors</dt><dd>'+esc(fi[4])+'</dd></dl>':'')+
+      (tv.length?'<p class="bwtv"><b>In Tervuren:</b> '+tv.join(' · ')+'</p>':'')+
+      (wj?'<p class="bwweet"><span>Wist je dat?</span>'+esc(wj)+'</p>':'<p class="bwweet"></p>')+
+      '<p class="bwvoet">'+esc(w.titel)+' · '+esc(dat)+'<br>Geografisch Arboretum Tervuren'+(f?'<br><span class="bwcred">Foto: '+esc(f.a||'onbekend')+(f.l?', '+esc(f.l):'')+', Wikimedia Commons</span>':'')+'</p></div>';}
+  if(!h){var x={z:'Hier staan bossen van vier continenten op een paar honderd meter van elkaar.'};h='<div class="bwijzer"><div class="bwtop">'+SV.eik+'</div><p class="bwkop">Een wereldreis rond bomen</p><p class="bwwand">'+esc(w.titel)+'</p><p class="bwweet"><span>Wist je dat?</span>'+esc(x.z)+'</p><p class="bwvoet">Geografisch Arboretum Tervuren<br>'+esc(dat)+'</p></div>';}
   $('bw').innerHTML='<h2 class="geenprint">Bladwijzers</h2><div class="bwrij">'+h+'</div>';
   // streken
   var gez={},str=[];w.stops.forEach(function(s){var g=String(s.g||'').match(/^\d+/);if(g&&H[g[0]]&&!gez[g[0]]){gez[g[0]]=1;str.push(H[g[0]].split(',')[0]);}});
