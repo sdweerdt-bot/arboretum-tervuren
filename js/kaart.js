@@ -206,7 +206,7 @@
     }
     if (!navigator.geolocation) { melding('Dit toestel of deze browser geeft geen locatie. Vink <b>Tik zelf op de kaart</b> aan.'); $('handmatigrij').hidden = false; return; }
     b.classList.add('aan'); b.textContent = 'GPS zoekt…'; eersteFix = true;
-    if ($('wspraak') && $('wspraak').checked && window.speechSynthesis && wand) { var u0 = new SpeechSynthesisUtterance('GPS staat aan'); u0.lang = 'nl-BE'; speechSynthesis.speak(u0); }   // een eerste zin bij een tik zet het geluid vrij op gsm
+    if ($('wspraak') && $('wspraak').checked && window.speechSynthesis && wand) { speechSynthesis.speak(uiting('GPS staat aan')); }   // een eerste zin bij een tik zet het geluid vrij op gsm
     watchId = navigator.geolocation.watchPosition(function (p) { nieuwePos(p, false); }, function (err) {
       if (err.code === 1) {
         b.classList.remove('aan'); b.textContent = 'Waar ben ik?';
@@ -321,7 +321,7 @@
     var sp = $('wspraak');
     if (sp && !sp.dataset.klaar) {
       sp.dataset.klaar = 1; sp.checked = lees('arb-spraak', false);
-      sp.onchange = function () { schrijf('arb-spraak', sp.checked); if (sp.checked && window.speechSynthesis) { var u = new SpeechSynthesisUtterance('Gesproken aanwijzingen staan aan'); u.lang = 'nl-BE'; speechSynthesis.cancel(); speechSynthesis.speak(u); } };
+      sp.onchange = function () { schrijf('arb-spraak', sp.checked); if (sp.checked && window.speechSynthesis) { speechSynthesis.cancel(); speechSynthesis.speak(uiting('Gesproken aanwijzingen staan aan')); } };
     }
     $('wvorige').onclick = function () { var i = huidigeStop(); wand.toon = Math.max(0, i - 1); wand.vast = pos ? pos.ll : [0, 0]; wandelingVolg(); };
     $('wvolgende').onclick = function () { var i = huidigeStop(); if (wand.gezien.indexOf(i) < 0 && i < wand.stops.length) { wand.gezien.push(i); bewaarGezien(); } wand.toon = Math.min(wand.stops.length, i + 1); wand.vast = pos ? pos.ll : [0, 0]; wandelingVolg(); };
@@ -396,9 +396,22 @@
   // welke stop tonen: een manueel gekozen stop (vorige/volgende/lijst) blijft staan tot je 60 m verder bent;
   // kom je bij een stop aan, dan blijft die in beeld zolang je er binnen 45 m van bent; daarna de eerstvolgende niet bezochte stop.
   function huidigeStop() { return wand.toon !== null && wand.toon !== undefined ? wand.toon : (wand.bij !== null && wand.bij !== undefined ? wand.bij : volgendeIndex()); }
+  // stem: de beste Nederlandstalige stem van het toestel (of de gekozen), iets trager dan standaard
+  function stemmen() { return (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(function (v) { return /^nl/i.test(v.lang); }); }
+  function stemScore(v) { var n = v.name; return (/premium|enhanced|natural|neural|verbeterd|online/i.test(n) ? 10 : 0) + (/google/i.test(n) ? 4 : 0) + (/nl[-_]BE/i.test(v.lang) ? 2 : 0) + (v.localService ? 0 : 1); }
+  function besteStem() { var k = lees('arb-stem', ''), l = stemmen(); return l.filter(function (v) { return v.name === k; })[0] || l.sort(function (a, b) { return stemScore(b) - stemScore(a); })[0] || null; }
+  function uiting(t) { var u = new SpeechSynthesisUtterance(t), v = besteStem(); u.lang = v ? v.lang : 'nl-BE'; if (v) u.voice = v; u.rate = lees('arb-tempo', 0.95); return u; }
+  function stemKeuze() {
+    var sel = $('wstem'); if (!sel || !window.speechSynthesis) return;
+    var l = stemmen().sort(function (a, b) { return stemScore(b) - stemScore(a); }), b = besteStem();
+    sel.innerHTML = l.map(function (v) { return '<option value="' + esc(v.name) + '"' + (b && v.name === b.name ? ' selected' : '') + '>' + esc(v.name) + ' (' + esc(v.lang) + ')</option>'; }).join('') || '<option>geen Nederlandse stem op dit toestel</option>';
+    sel.onchange = function () { schrijf('arb-stem', sel.value); speechSynthesis.cancel(); speechSynthesis.speak(uiting('Zo klinkt deze stem. Welkom in het arboretum.')); };
+    var tp = $('wtempo'); if (tp) { tp.value = lees('arb-tempo', 0.95); tp.onchange = function () { schrijf('arb-tempo', +tp.value); speechSynthesis.cancel(); speechSynthesis.speak(uiting('Zo snel spreek ik nu.')); }; }
+  }
+  if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = function () { stemKeuze(); }; setTimeout(stemKeuze, 500); }
   function zeg(t) {
     if (!($('wspraak') && $('wspraak').checked && window.speechSynthesis)) return;
-    var u = new SpeechSynthesisUtterance(t); u.lang = 'nl-BE';
+    var u = uiting(t);
     if (!(speechSynthesis.speaking && Date.now() - leestSinds < 90000)) speechSynthesis.cancel();   // stopinfo niet onderbreken, aanwijzing komt erna
     speechSynthesis.speak(u);
   }
@@ -409,7 +422,7 @@
     speechSynthesis.cancel(); leestSinds = Date.now();
     String(t || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).forEach(function (z) {
       z = z.trim(); if (!z) return;
-      var u = new SpeechSynthesisUtterance(z); u.lang = 'nl-BE'; speechSynthesis.speak(u);
+      speechSynthesis.speak(uiting(z));
     });
   }
   function stopTekstKort(s, i) { return 'Je bent bij stop ' + (i + 1) + ': ' + s.titel + '. ' + (s.tekst || ''); }
