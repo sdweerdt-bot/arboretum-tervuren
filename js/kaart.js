@@ -643,8 +643,10 @@
   // Met de GitHub-sleutel van de beheerpagina op dit toestel komt de boom meteen in data/extra_bomen.json (zichtbaar na 1-2 min);
   // zonder sleutel blijft hij op dit toestel en toont de pagina de gegevens om door te sturen.
   function taxonIndex(n) { for (var i = 0; i < D.taxa.length; i++) if (D.taxa[i][1] === n) return i; return -1; }
+  function slugVan(n) { return n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/×/g, 'x').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
   function voegExtraToe(x) {
-    var ti = taxonIndex(x.n); if (ti < 0) return null;
+    var ti = taxonIndex(x.n);
+    if (ti < 0) { D.taxa.push([slugVan(x.n), x.n, x.nl || '', x.naald ? 1 : 0, '', 1]); ti = D.taxa.length - 1; }   // nieuwe soort (nog geen fiche tot de volgende build)
     for (var i = 0; i < D.bomen.length; i++) if (D.bomen[i][0] === ti && afstand([D.bomen[i][2], D.bomen[i][3]], [x.lat, x.lon]) < 3) return null;   // staat er al (na een nieuwe build)
     var b = [ti, x.g || '', x.lat, x.lon, x.om || 0, x.j || 0]; D.bomen.push(b); return b;
   }
@@ -660,15 +662,21 @@
     el.hidden = false;
     el.innerHTML = '<h2>Ontbrekende boom toevoegen</h2><p class="muted">Ga zo dicht mogelijk bij de stam staan. Positie: ' + pos.ll[0].toFixed(6) + ', ' + pos.ll[1].toFixed(6) + (pos.acc ? ' (± ' + Math.round(pos.acc) + ' m)' : '') + '</p>' +
       '<label>Soort (wetenschappelijke naam) <input id="bp-n" list="bp-lijst" autocomplete="off" placeholder="bv. Quercus frainetto"></label><datalist id="bp-lijst">' + opties + '</datalist>' +
+      '<div id="bp-nieuw" hidden><p class="muted">Deze soort staat nog niet in de gids: ze wordt als nieuwe soort toegevoegd.</p><label>Nederlandse naam (als je die kent) <input id="bp-nl" placeholder="bv. Chinese parasolboom"></label><label class="vink"><input type="checkbox" id="bp-naald"> naaldboom</label></div>' +
       '<label>Plantjaar <input id="bp-j" inputmode="numeric" placeholder="bv. 1908"></label><label>Omtrek in cm (op 1,50 m) <input id="bp-om" inputmode="numeric" placeholder="bv. 290"></label>' +
       '<label>Opmerking <input id="bp-opm" placeholder="bv. mooi groot exemplaar"></label>' +
       '<div class="d-acties"><button type="button" class="knop hoofd" id="bp-ok">Boom bewaren</button><button type="button" id="bp-weg">Annuleren</button></div><p id="bp-stat" class="muted"></p>';
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     $('bp-weg').onclick = function () { el.hidden = true; el.innerHTML = ''; };
+    $('bp-n').oninput = function () { var v = this.value.trim(); $('bp-nieuw').hidden = !(v.indexOf(' ') > 0 && taxonIndex(v) < 0 && v.length > 6); $('bp-stat').textContent = ''; };
     $('bp-ok').onclick = function () {
-      var n = $('bp-n').value.trim(); if (taxonIndex(n) < 0) { $('bp-stat').textContent = 'Kies een soort uit de lijst (wetenschappelijke naam).'; return; }
+      var n = $('bp-n').value.trim().replace(/\s+/g, ' ');
+      if (!/^[A-Z][a-z-]+ (×\s?|x )?[a-z-]+/.test(n)) { $('bp-stat').textContent = 'Geef de wetenschappelijke naam: geslacht met hoofdletter en soort, bv. Firmiana simplex.'; return; }
+      var nieuw = taxonIndex(n) < 0;
+      if (nieuw && $('bp-nieuw').hidden) { $('bp-nieuw').hidden = false; $('bp-stat').textContent = 'Nieuwe soort: vul eventueel de Nederlandse naam aan en tik nog eens op Boom bewaren.'; return; }
       var x = { n: n, lat: +pos.ll[0].toFixed(6), lon: +pos.ll[1].toFixed(6), acc: pos.acc ? Math.round(pos.acc) : null, j: parseInt($('bp-j').value, 10) || 0, om: parseInt($('bp-om').value, 10) || 0,
         opm: $('bp-opm').value.trim(), datum: new Date().toISOString().slice(0, 10), bron: 'ter plaatse toegevoegd' };
+      if (nieuw) { x.nieuw = 1; x.nl = $('bp-nl').value.trim(); x.naald = $('bp-naald').checked ? 1 : 0; }
       var tekst = x.n + ' · ' + x.lat + ', ' + x.lon + (x.j ? ' · geplant ' + x.j : '') + (x.om ? ' · omtrek ' + x.om + ' cm' : '') + (x.opm ? ' · ' + x.opm : '');
       toonExtra(voegExtraToe(x));
       var token = lees('arb-gh-token', '');
