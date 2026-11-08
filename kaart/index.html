@@ -9,14 +9,14 @@
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icoon-192.png">
 <link rel="apple-touch-icon" href="../icoon-192.png">
-<link rel="stylesheet" href="../css/site.css?v=1647c588">
+<link rel="stylesheet" href="../css/site.css?v=a4ad0ce5">
 <link rel="stylesheet" href="../lib/leaflet-1.9.4/leaflet.css">
 </head>
 <body data-root="../" class="kaartpagina">
 <header class="top"><a class="home" href="../">Arboretum Tervuren</a><nav><a href="../kaart/">Kaart</a><a href="../wandelingen/">Wandelingen</a><a href="../soorten/">Soorten</a><a href="../boek/">Het boek</a></nav></header>
 <main class="kaart">
 <div class="balk"><div class="zoekbox"><input type="search" id="zoek" placeholder="Zoek een soort op de kaart…" aria-label="Zoek een soort" autocomplete="off"><ul id="zoekres" class="lijst" hidden></ul></div>
-<button id="waar" class="knop hoofd" type="button">Waar ben ik?</button><button id="boomplusknop" class="knop" type="button" title="Een boom die niet op de kaart staat toevoegen op je huidige plaats">📍 Boom toevoegen</button></div>
+<button id="waar" class="knop hoofd" type="button">Waar ben ik?</button><button id="boomplusknop" class="knop" type="button" title="Een boom die niet op de kaart staat toevoegen op je huidige plaats">📍 Boom toevoegen</button><button id="bankplusknop" class="knop" type="button" title="Een zitbank die niet op de kaart staat toevoegen op je huidige plaats">🪑 Zitbank toevoegen</button></div>
 <p id="handmatigrij" class="muted" hidden><label><input type="checkbox" id="handmatig"> Tik zelf op de kaart waar je staat (als GPS niet werkt)</label></p>
 <p id="melding" class="melding" hidden></p>
 <div id="boomplus" hidden></div>
@@ -24,7 +24,7 @@
 <section class="paneel" id="wandeling" hidden><h2 id="wtitel"></h2><p id="wmeta" class="muted"></p><p><a id="woverzicht" class="knop" href="#">Overzicht van de wandeling (alle stops)</a></p><div id="wnav" class="wnav" hidden aria-live="polite"></div><p class="navopt"><label><input type="checkbox" id="wspraak"> Audiogids: aanwijzingen en stopinfo uitspreken</label> <span class="muted">· richtingaanwijzingen verschijnen met de GPS aan, vanaf 70 m voor een kruispunt</span></p><div id="wvolg"></div><p class="fotoneem" id="wfotoblok" hidden><label class="knop"><span id="wfotolabel">📷 Foto nemen of kiezen</span><input type="file" accept="image/*" hidden id="wfoto"></label><span class="fotostatus" id="wfotostatus"></span></p>
 <details><summary>Alle stops</summary><ul id="wlijst"></ul></details><div class="d-acties"><button type="button" id="wvorige">← vorige</button><button type="button" id="wvolgende">volgende →</button><button type="button" id="wreset">opnieuw</button></div></section>
 
-<details class="legende"><summary>Legende</summary><div><span><i class="naald"></i>naaldbomen</span><span><i class="loof"></i>loofbomen</span><span>rechthoek = reeks (groep bomen), bol = afzonderlijke boom</span><span><i class="gras"></i>grasveld of weide (vrij toegankelijk)</span><span><i class="padgroot"></i>groot pad of dreef</span><span><i class="padklein"></i>klein pad door de zones</span><span><i class="padwand"></i>de gekozen wandeling</span><span>groen vlak = Nieuwe Wereld, bruin vlak = Oude Wereld</span></div></details>
+<details class="legende"><summary>Legende</summary><div><span><i class="naald"></i>naaldbomen</span><span><i class="loof"></i>loofbomen</span><span>rechthoek = reeks (groep bomen), bol = afzonderlijke boom</span><span><i class="gras"></i>grasveld of weide (vrij toegankelijk)</span><span><i class="padgroot"></i>groot pad of dreef</span><span><i class="padklein"></i>klein pad door de zones</span><span><i class="padwand"></i>de gekozen wandeling</span><span>groen vlak = Nieuwe Wereld, bruin vlak = Oude Wereld</span><span>🪑 zitbank</span></div></details>
 <section class="paneel" id="dichtbij"><h2>Dichtbij <span id="dstat" class="muted"></span></h2>
 <div class="straal">binnen <button type="button" data-r="30">30 m</button><button type="button" data-r="60" class="aan">60 m</button><button type="button" data-r="150">150 m</button></div>
 <div id="dlijst"><p class="muted">Tik op <b>Waar ben ik?</b>: je ziet dan in welke groep je staat en welke soorten er in de buurt staan, de dichtste eerst.</p></div></section>
@@ -45,7 +45,7 @@
 </main>
 <script type="module" src="../lib/leaflet-1.9.4/leaflet-global.js"></script>
 <script>window.ZIMG={"1": "groep-01.jpg", "2": "groep-02.jpg", "3": "groep-03.jpg", "4": "groep-04.jpg", "5": "groep-05.jpg", "6": "groep-06.jpg", "7": "groep-07.jpg", "8": "groep-08.jpg", "9": "groep-09.jpg", "10": "groep-10.jpg", "11": "groep-11.jpg", "12": "groep-12.jpg", "13": "groep-13.jpg", "14": "groep-14.jpg", "15": "groep-15.jpg", "16": "groep-16.jpg", "17": "groep-17.jpg", "18": "groep-18.jpg", "19": "groep-19.jpg", "20": "groep-20.jpg", "21": "groep-21.jpg", "22": "groep-22.jpg", "23": "groep-23.jpg", "24": "groep-24.jpg", "25": "groep-25.jpg", "26": "groep-26.jpg", "27": "groep-27.jpg", "28": "groep-28.jpg", "29": "groep-29.jpg", "30": "groep-30.jpg", "31": "groep-31.jpg", "32": "groep-32.jpg", "33": "groep-33.jpg", "34": "groep-34.jpg", "35": "groep-35.jpg", "36": "groep-36.jpg", "37": "groep-37.jpg", "38": "groep-38.jpg", "39": "groep-39.jpg", "40": "groep-40.jpg"};</script>
-<script src="../js/fotoneem.js"></script><script src="../js/kaart.js?v=1647c588"></script>
+<script src="../js/fotoneem.js"></script><script src="../js/kaart.js?v=a4ad0ce5"></script>
 <footer class="foot"><p>Gids voor het Geografisch Arboretum Tervuren · <a href="../groepen/">groepen</a> · <a href="../boek/">het boek</a> · <a href="../tijdlijn/">diepe tijd</a> · <a href="../gidsen/">voor gidsen</a> · <a href="../speurkaart/">speurkaart</a> · <a href="../quiz/">quiz</a> · <a href="../aandenken/">aandenken</a> · <a href="../feedback/">feedback</a> · <a href="../kaart/?opnemen=1#opnemen">tocht opnemen</a> · <a href="../colofon/">colofon en bronnen</a></p></footer>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('../sw.js').catch(function(){});}</script>
 </body>

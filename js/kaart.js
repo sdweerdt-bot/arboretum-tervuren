@@ -59,10 +59,11 @@
     }).addTo(map);
     map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
     map.fitBounds(D.bounds, { padding: [8, 8] });
-    ['groepen', 'paden', 'reeksen', 'bomen', 'opname', 'wand', 'sel'].forEach(function (k) { lagen[k] = L.layerGroup().addTo(map); });
+    ['groepen', 'paden', 'reeksen', 'bomen', 'banken', 'opname', 'wand', 'sel'].forEach(function (k) { lagen[k] = L.layerGroup().addTo(map); });
     tekenBasis();
     $('waar').addEventListener('click', wisselGps);
     if ($('boomplusknop')) $('boomplusknop').addEventListener('click', boomPlus);
+    if ($('bankplusknop')) $('bankplusknop').addEventListener('click', bankPlus);
     document.querySelectorAll('.straal button').forEach(function (b) {
       b.addEventListener('click', function () {
         straal = +b.dataset.r;
@@ -604,6 +605,40 @@
   }
   function dlBlob(f) { var a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
 
+  // ------------------------------------------------------------ zitbanken (OpenStreetMap + ter plaatse toegevoegd)
+  var BANKEN = [];
+  var BANKICOON = null;
+  function toonBank(z) {
+    if (!BANKICOON) BANKICOON = L.divIcon({ className: 'bank', html: '<span>🪑</span>', iconSize: [20, 20], iconAnchor: [10, 10] });
+    L.marker([z.lat, z.lon], { icon: BANKICOON, keyboard: false }).bindPopup('<b>Zitbank</b>' + (z.rug === 'yes' ? ' met rugleuning' : z.rug === 'no' ? ' zonder rugleuning' : '') +
+      (z.mat === 'wood' ? ', hout' : z.mat === 'stone' ? ', steen' : '') + (z.opm ? '<br>' + esc(z.opm) : '') + '<br><span class="muted">' + (z.bron === 'OSM' ? 'bron: OpenStreetMap' : 'ter plaatse toegevoegd') + '</span>').addTo(lagen.banken);
+  }
+  function bewaarInRepo(pad, item, boodschap) {
+    var token = lees('arb-gh-token', ''); if (!token) return Promise.reject(new Error('geen sleutel'));
+    var api = 'https://api.github.com/repos/sdweerdt-bot/arboretum-tervuren/contents/' + pad, h = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+    return fetch(api + '?ref=main', { headers: h, cache: 'no-store' }).then(function (r) { return r.status === 404 ? null : r.ok ? r.json() : Promise.reject(new Error('lezen: ' + r.status)); }).then(function (f) {
+      var lijst = f ? JSON.parse(decodeURIComponent(escape(atob(f.content.replace(/\s/g, ''))))) : [];
+      lijst.push(item);
+      var body = { message: boodschap, content: btoa(unescape(encodeURIComponent(JSON.stringify(lijst).replace(/\},\{/g, '},\n{')))), branch: 'main' };
+      if (f) body.sha = f.sha;
+      return fetch(api, { method: 'PUT', headers: h, body: JSON.stringify(body) });
+    }).then(function (r) { if (!r.ok) throw new Error('bewaren: ' + r.status); });
+  }
+  function bankPlus() {
+    if (!pos) { melding('Zet eerst de GPS aan (Waar ben ik?) en ga bij de zitbank staan.'); return; }
+    for (var i = 0; i < BANKEN.length; i++) if (afstand(pos.ll, [BANKEN[i].lat, BANKEN[i].lon]) < 6) { melding('Er staat al een zitbank op de kaart op ' + Math.round(afstand(pos.ll, [BANKEN[i].lat, BANKEN[i].lon])) + ' m van je.'); return; }
+    var rug = confirm('Zitbank toevoegen op je huidige plaats.\n\nHeeft de bank een rugleuning? (OK = ja, Annuleren = nee)');
+    var z = { lat: +pos.ll[0].toFixed(6), lon: +pos.ll[1].toFixed(6), acc: pos.acc ? Math.round(pos.acc) : null, rug: rug ? 'yes' : 'no', datum: new Date().toISOString().slice(0, 10), bron: 'ter plaatse' };
+    BANKEN.push(z); toonBank(z);
+    var tekst = 'Zitbank · ' + z.lat + ', ' + z.lon;
+    bewaarInRepo('data/zitbanken_extra.json', z, 'Zitbank toegevoegd ter plaatse').then(function () {
+      melding('✓ Zitbank bewaard. Ze staat nu op jouw kaart en binnen een à twee minuten voor iedereen.');
+    }).catch(function (e) {
+      var q = lees('arb-bankwachtrij', []); q.push(z); schrijf('arb-bankwachtrij', q);
+      melding((e.message === 'geen sleutel' ? 'Bewaard op dit toestel (geen GitHub-sleutel hier).' : 'Opladen lukte niet (' + esc(e.message) + ').') + ' Stuur deze gegevens door: <b>' + esc(tekst) + '</b>');
+    });
+  }
+
   // ------------------------------------------------------------ ontbrekende boom toevoegen (ter plaatse, met de GPS)
   // Met de GitHub-sleutel van de beheerpagina op dit toestel komt de boom meteen in data/extra_bomen.json (zichtbaar na 1-2 min);
   // zonder sleutel blijft hij op dit toestel en toont de pagina de gegevens om door te sturen.
@@ -665,6 +700,8 @@
     fetch(ROOT + 'data/extra_bomen.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })])
     .then(function (x) {
       D = x[0]; WAND = x[1]; (x[2] || []).forEach(voegExtraToe);
+      Promise.all(['zitbanken.json', 'zitbanken_extra.json'].map(function (f) { return fetch(ROOT + 'data/' + f, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }); }))
+        .then(function (z) { BANKEN = z[0].concat(z[1]); var w = setInterval(function () { if (lagen.banken) { clearInterval(w); BANKEN.forEach(toonBank); } }, 200); });
       if (window.L && L.map) start(); else window.addEventListener('leaflet-klaar', start, { once: true });
     }).catch(function () { melding('De kaartgegevens konden niet geladen worden.'); });
 })();

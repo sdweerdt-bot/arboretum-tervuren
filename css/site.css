@@ -436,3 +436,5 @@ h2[id]{scroll-margin-top:4.5rem}
 /* ontbrekende boom toevoegen op de kaart */
 #boomplus{background:#fff;border:2px solid #0b4a45;border-radius:8px;padding:.6rem .8rem;margin:.5rem 0}
 #boomplus h2{margin:.1rem 0 .3rem;font-size:1.1rem}#boomplus label{display:block;margin:.35rem 0}#boomplus input{width:100%;box-sizing:border-box;padding:.35rem;font-size:1rem}
+
+.bank span{font-size:15px;line-height:20px;display:block;text-align:center;background:#fff;border:1px solid #8d6e63;border-radius:4px;width:18px;height:18px}
